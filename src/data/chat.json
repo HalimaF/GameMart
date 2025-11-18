@@ -1,0 +1,55 @@
+{
+  "messages": [
+    {
+      "id": 1,
+      "username": "GamerKing",
+      "message": "Anyone want to trade FIFA 24 for Call of Duty?",
+      "timestamp": "2:30 PM",
+      "isCurrentUser": false
+    },
+    {
+      "id": 2,
+      "username": "ProGamer99",
+      "message": "I have CoD! Let's trade.",
+      "timestamp": "2:32 PM",
+      "isCurrentUser": false
+    },
+    {
+      "id": 3,
+      "username": "SkillMaster",
+      "message": "Selling God of War Ragnarök at 20% off!",
+      "timestamp": "2:35 PM",
+      "isCurrentUser": false
+    },
+    {
+      "id": 4,
+      "username": "You",
+      "message": "Looking for Spider-Man 2. Anyone?",
+      "timestamp": "2:40 PM",
+      "isCurrentUser": true
+    }
+  ],
+  "offers": [
+    {
+      "id": 1,
+      "title": "Flash Sale!",
+      "description": "Get 25% off on all RPG games this weekend",
+      "discount": 25,
+      "expiresIn": "2 days"
+    },
+    {
+      "id": 2,
+      "title": "New Member Bonus",
+      "description": "First purchase gets extra 200 coins",
+      "discount": 10,
+      "expiresIn": "7 days"
+    },
+    {
+      "id": 3,
+      "title": "Weekend Special",
+      "description": "Buy 2 get 15% off on Racing games",
+      "discount": 15,
+      "expiresIn": "3 days"
+    }
+  ]
+}

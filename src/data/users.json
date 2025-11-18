@@ -1,0 +1,35 @@
+[
+  {
+    "id": 1,
+    "username": "admin",
+    "email": "admin@gamemart.com",
+    "password": "admin123",
+    "coins": 5000,
+    "xp": 10000,
+    "tier": "Platinum",
+    "badges": ["Founder", "Admin", "All Achievements"],
+    "joinDate": "2025-01-01"
+  },
+  {
+    "id": 2,
+    "username": "GamerPro123",
+    "email": "gamer@example.com",
+    "password": "password123",
+    "coins": 2450,
+    "xp": 5680,
+    "tier": "Gold",
+    "badges": ["First Purchase", "10 Games", "Review Master"],
+    "joinDate": "2025-01-15"
+  },
+  {
+    "id": 3,
+    "username": "ProPlayer99",
+    "email": "player@example.com",
+    "password": "pass123",
+    "coins": 1200,
+    "xp": 3400,
+    "tier": "Silver",
+    "badges": ["First Purchase", "5 Games"],
+    "joinDate": "2025-02-01"
+  }
+]

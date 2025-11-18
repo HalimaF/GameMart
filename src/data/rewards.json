@@ -1,0 +1,70 @@
+{
+  "userStats": {
+    "coins": 2450,
+    "xp": 5680,
+    "tier": "Gold",
+    "badges": ["First Purchase", "10 Games", "Review Master"]
+  },
+  "missions": [
+    {
+      "id": 1,
+      "title": "First Purchase",
+      "description": "Make your first game purchase",
+      "current": 1,
+      "target": 1,
+      "rewardCoins": 100,
+      "rewardXP": 50,
+      "claimed": false
+    },
+    {
+      "id": 2,
+      "title": "Game Collector",
+      "description": "Purchase 5 different games",
+      "current": 3,
+      "target": 5,
+      "rewardCoins": 250,
+      "rewardXP": 150,
+      "claimed": false
+    },
+    {
+      "id": 3,
+      "title": "Big Spender",
+      "description": "Spend $100 or more in total",
+      "current": 87,
+      "target": 100,
+      "rewardCoins": 500,
+      "rewardXP": 300,
+      "claimed": false
+    },
+    {
+      "id": 4,
+      "title": "Review Writer",
+      "description": "Write 10 game reviews",
+      "current": 10,
+      "target": 10,
+      "rewardCoins": 200,
+      "rewardXP": 100,
+      "claimed": false
+    },
+    {
+      "id": 5,
+      "title": "Arcade Master",
+      "description": "Play 20 mini games",
+      "current": 15,
+      "target": 20,
+      "rewardCoins": 300,
+      "rewardXP": 200,
+      "claimed": false
+    },
+    {
+      "id": 6,
+      "title": "Social Gamer",
+      "description": "Send 50 chat messages",
+      "current": 32,
+      "target": 50,
+      "rewardCoins": 150,
+      "rewardXP": 75,
+      "claimed": false
+    }
+  ]
+}

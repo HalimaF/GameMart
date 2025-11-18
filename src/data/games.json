@@ -1,0 +1,134 @@
+[
+  {
+    "id": 1,
+    "title": "FIFA 24",
+    "console": "PS5",
+    "genre": "Sports",
+    "price": 59.99,
+    "originalPrice": 69.99,
+    "discount": 15,
+    "rating": 4.5,
+    "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400",
+    "stock": 50
+  },
+  {
+    "id": 2,
+    "title": "God of War Ragnarök",
+    "console": "PS5",
+    "genre": "Action",
+    "price": 69.99,
+    "rating": 4.9,
+    "image": "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400",
+    "stock": 35
+  },
+  {
+    "id": 3,
+    "title": "Hogwarts Legacy",
+    "console": "PS5",
+    "genre": "RPG",
+    "price": 49.99,
+    "originalPrice": 59.99,
+    "discount": 17,
+    "rating": 4.6,
+    "image": "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=400",
+    "stock": 42
+  },
+  {
+    "id": 4,
+    "title": "Call of Duty: Modern Warfare III",
+    "console": "Xbox",
+    "genre": "Action",
+    "price": 69.99,
+    "rating": 4.3,
+    "image": "https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=400",
+    "stock": 28
+  },
+  {
+    "id": 5,
+    "title": "The Last of Us Part II",
+    "console": "PS4",
+    "genre": "Adventure",
+    "price": 39.99,
+    "originalPrice": 49.99,
+    "discount": 20,
+    "rating": 4.8,
+    "image": "https://images.unsplash.com/photo-1542549237432-d78d49ffb2b4?w=400",
+    "stock": 60
+  },
+  {
+    "id": 6,
+    "title": "Gran Turismo 7",
+    "console": "PS5",
+    "genre": "Racing",
+    "price": 54.99,
+    "rating": 4.4,
+    "image": "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?w=400",
+    "stock": 33
+  },
+  {
+    "id": 7,
+    "title": "Spider-Man 2",
+    "console": "PS5",
+    "genre": "Action",
+    "price": 69.99,
+    "rating": 4.9,
+    "image": "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=400",
+    "stock": 25
+  },
+  {
+    "id": 8,
+    "title": "Forza Horizon 5",
+    "console": "Xbox",
+    "genre": "Racing",
+    "price": 44.99,
+    "originalPrice": 59.99,
+    "discount": 25,
+    "rating": 4.7,
+    "image": "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=400",
+    "stock": 38
+  },
+  {
+    "id": 9,
+    "title": "Elden Ring",
+    "console": "PS5",
+    "genre": "RPG",
+    "price": 59.99,
+    "rating": 4.8,
+    "image": "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=400",
+    "stock": 45
+  },
+  {
+    "id": 10,
+    "title": "Cyberpunk 2077",
+    "console": "PC",
+    "genre": "RPG",
+    "price": 39.99,
+    "originalPrice": 59.99,
+    "discount": 33,
+    "rating": 4.2,
+    "image": "https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=400",
+    "stock": 52
+  },
+  {
+    "id": 11,
+    "title": "Red Dead Redemption 2",
+    "console": "PS4",
+    "genre": "Adventure",
+    "price": 29.99,
+    "originalPrice": 39.99,
+    "discount": 25,
+    "rating": 4.9,
+    "image": "https://images.unsplash.com/photo-1551103782-8ab07afd45c1?w=400",
+    "stock": 70
+  },
+  {
+    "id": 12,
+    "title": "Starfield",
+    "console": "Xbox",
+    "genre": "RPG",
+    "price": 69.99,
+    "rating": 4.5,
+    "image": "https://images.unsplash.com/photo-1614732414444-096e5f1122d5?w=400",
+    "stock": 30
+  }
+]
