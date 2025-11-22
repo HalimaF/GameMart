@@ -2,9 +2,10 @@
 const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
   return (
     <div>
-      {/* Add your cart item code here */}
+        {/* CartItem content goes here */}
     </div>
   );
 };
 
 export default CartItem;
+// TODO: Write CartItem main code here

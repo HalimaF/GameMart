@@ -2,9 +2,10 @@
 const GameCard = ({ game, onAddToCart }) => {
   return (
     <div>
-      {/* Add your game card code here */}
+      {/* GameCard content goes here */}
     </div>
   );
 };
 
 export default GameCard;
+// TODO: Write GameCard main code here

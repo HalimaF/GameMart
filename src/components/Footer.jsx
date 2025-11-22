@@ -1,8 +1,9 @@
 const Footer = () => {
   return (
-    <footer>
-      {/* Add your footer code here */}
-    </footer>
+      <footer>
+        {/* Footer content goes here */}
+        // TODO: Write Footer main code here
+      </footer>
   );
 };
 

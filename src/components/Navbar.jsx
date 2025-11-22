@@ -1,8 +1,8 @@
 const Navbar = () => {
   return (
-    <nav>
-      {/* Add your navbar code here */}
-    </nav>
+        <nav>
+          {/* Navbar content goes here */}
+        </nav>
   );
 };
 
