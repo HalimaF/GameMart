@@ -1,12 +1,19 @@
-import React from "react";
+import { Box, Typography } from "@mui/material";
 
-// TODO: Write MiniGameScore main code here
-
-const MiniGameScore = () => {
+const MiniGameScore = ({ score, highScore }) => {
   return (
-    <div>
-      {/* MiniGameScore content goes here */}
-    </div>
+    <Box sx={{ display: 'flex', gap: 3 }}>
+      <Box>
+        <Typography variant="caption" sx={{ color: '#9ca3af' }}>Score</Typography>
+        <Typography variant="h6" sx={{ color: '#93c5fd' }}>{score}</Typography>
+      </Box>
+      {highScore !== undefined && (
+        <Box>
+          <Typography variant="caption" sx={{ color: '#9ca3af' }}>High Score</Typography>
+          <Typography variant="h6" sx={{ color: '#fde68a' }}>{highScore}</Typography>
+        </Box>
+      )}
+    </Box>
   );
 };
 

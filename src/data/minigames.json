@@ -1,0 +1,129 @@
+[
+  {
+    "id": "floppybird",
+    "title": "Floppy Bird (MIT)",
+    "src": "https://nebez.github.io/floppybird/",
+    "allowSameOriginSandbox": true,
+    "category": "Arcade",
+    "tags": ["arcade", "flappy", "bird"],
+    "thumbnail": ""
+  },
+  {
+    "id": "trex",
+    "title": "T-Rex Runner (Open Source)",
+    "src": "https://wayou.github.io/t-rex-runner/",
+    "allowSameOriginSandbox": true,
+    "category": "Arcade",
+    "tags": ["runner", "trex", "offline"],
+    "thumbnail": ""
+  },
+  {
+    "id": "snake",
+    "title": "Snake (JS)",
+    "src": "https://codeincomplete.com/games/snake/",
+    "allowSameOriginSandbox": true,
+    "category": "Arcade",
+    "tags": ["snake", "classic"],
+    "thumbnail": ""
+  },
+  {
+    "id": "tetris",
+    "title": "Tetris (OpenTetris)",
+    "src": "https://opentetris.vercel.app/",
+    "allowSameOriginSandbox": true,
+    "category": "Puzzle",
+    "tags": ["tetris", "blocks", "retro"],
+    "thumbnail": ""
+  },
+  
+  {
+    "id": "hexgl",
+    "title": "HexGL (WebGL)",
+    "src": "http://hexgl.bkcore.com/",
+    "allowSameOriginSandbox": true,
+    "category": "Racing",
+    "tags": ["webgl", "racing", "futuristic"],
+    "thumbnail": ""
+  },
+  {
+    "id": "v0games",
+    "title": "v0 Games (Hub)",
+    "src": "https://v0games.vercel.app/",
+    "allowSameOriginSandbox": true,
+    "category": "Arcade",
+    "tags": ["hub", "arcade", "open-source"],
+    "thumbnail": ""
+  },
+  {
+    "id": "openlara",
+    "title": "OpenLara (WebGL)",
+    "src": "http://xproger.info/projects/OpenLara/",
+    "allowSameOriginSandbox": true,
+    "category": "Third-Person",
+    "tags": ["tomb raider", "webgl"],
+    "thumbnail": ""
+  },
+  {
+    "id": "micropolisjs",
+    "title": "micropolisJS",
+    "src": "http://www.graememcc.co.uk/micropolisJS",
+    "allowSameOriginSandbox": true,
+    "category": "City-Building",
+    "tags": ["simcity", "city", "simulation"],
+    "thumbnail": ""
+  },
+  {
+    "id": "sopwith",
+    "title": "SDL Sopwith",
+    "src": "https://fragglet.github.io/sdl-sopwith",
+    "allowSameOriginSandbox": true,
+    "category": "Shoot 'em up",
+    "tags": ["retro", "planes", "shooter"],
+    "thumbnail": ""
+  },
+  {
+    "id": "mindustry",
+    "title": "Mindustry (Web)",
+    "src": "https://mindustrygame.github.io/",
+    "allowSameOriginSandbox": true,
+    "category": "Real-Time strategies",
+    "tags": ["tower defense", "factory", "rts"],
+    "thumbnail": ""
+  },
+  {
+    "id": "openpanzer",
+    "title": "OpenPanzer",
+    "src": "https://www.linuxconsulting.ro/openpanzer",
+    "allowSameOriginSandbox": true,
+    "category": "Turn-Based strategies",
+    "tags": ["ww2", "tactics", "hex"],
+    "thumbnail": ""
+  },
+  {
+    "id": "underrun",
+    "title": "Underrun (JS13k)",
+    "src": "https://phoboslab.org/underrun/",
+    "allowSameOriginSandbox": true,
+    "category": "Action",
+    "tags": ["shooter", "pixel", "js13k"],
+    "thumbnail": ""
+  },
+  {
+    "id": "q1k3",
+    "title": "Q1K3 (JS13k)",
+    "src": "https://phoboslab.org/q1k3/",
+    "allowSameOriginSandbox": true,
+    "category": "FPS",
+    "tags": ["quake", "fps", "js13k"],
+    "thumbnail": ""
+  },
+  {
+    "id": "evilglitch",
+    "title": "Evil Glitch",
+    "src": "https://killedbyapixel.github.io/EvilGlitch/",
+    "allowSameOriginSandbox": true,
+    "category": "Action",
+    "tags": ["shooter", "arcade", "retro"],
+    "thumbnail": ""
+  }
+]

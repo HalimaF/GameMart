@@ -1,12 +1,10 @@
-import React from "react";
+import { Pagination as MUIPagination, Box } from "@mui/material";
 
-// TODO: Write Pagination main code here
-
-const Pagination = () => {
+const Pagination = ({ count, page, onChange }) => {
   return (
-    <div>
-      {/* Pagination content goes here */}
-    </div>
+    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+      <MUIPagination count={count} page={page} onChange={onChange} color="primary" />
+    </Box>
   );
 };
 

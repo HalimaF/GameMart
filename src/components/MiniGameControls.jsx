@@ -1,12 +1,15 @@
-import React from "react";
+import { Box, Button } from "@mui/material";
 
-// TODO: Write MiniGameControls main code here
-
-const MiniGameControls = () => {
+const MiniGameControls = ({ onStart, onPause, onReset, isPlaying }) => {
   return (
-    <div>
-      {/* MiniGameControls content goes here */}
-    </div>
+    <Box sx={{ display: 'flex', gap: 1 }}>
+      {!isPlaying ? (
+        <Button variant="contained" onClick={onStart}>Start</Button>
+      ) : (
+        <Button variant="outlined" onClick={onPause}>Pause</Button>
+      )}
+      <Button variant="outlined" onClick={onReset}>Reset</Button>
+    </Box>
   );
 };
 

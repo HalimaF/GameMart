@@ -1,12 +1,15 @@
-import React from "react";
+import { Box, TextField, Button } from "@mui/material";
 
-// TODO: Write EditProfileForm main code here
-
-const EditProfileForm = () => {
+const EditProfileForm = ({ user, onSave, onCancel }) => {
   return (
-    <form>
-      {/* EditProfileForm content goes here */}
-    </form>
+    <Box component="form" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <TextField label="Username" defaultValue={user?.username} fullWidth />
+      <TextField label="Email" defaultValue={user?.email} fullWidth />
+      <Box sx={{ display: 'flex', gap: 2 }}>
+        <Button variant="contained" onClick={onSave}>Save</Button>
+        <Button variant="outlined" onClick={onCancel}>Cancel</Button>
+      </Box>
+    </Box>
   );
 };
 

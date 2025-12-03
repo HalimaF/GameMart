@@ -1,11 +1,7 @@
-import React from "react";
+import { CardMedia } from "@mui/material";
 
-// TODO: Write GameImage main code here
-
-const GameImage = () => {
-  return (
-    <img alt="Game" />
-  );
+const GameImage = ({ src, alt, height = 200 }) => {
+  return <CardMedia component="img" height={height} image={src} alt={alt} />;
 };
 
 export default GameImage;

@@ -1,10 +1,10 @@
-import React from "react";
+import { Avatar } from "@mui/material";
 
-// TODO: Write ProfileAvatar main code here
-
-const ProfileAvatar = () => {
+const ProfileAvatar = ({ user, size = 48 }) => {
   return (
-    <img alt="Avatar" />
+    <Avatar sx={{ width: size, height: size, bgcolor: '#3b82f6' }}>
+      {user?.username?.[0]?.toUpperCase()}
+    </Avatar>
   );
 };
 

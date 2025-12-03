@@ -1,12 +1,12 @@
-import React from "react";
+import { Box, TextField, Button } from "@mui/material";
 
-// TODO: Write LoginForm main code here
-
-const LoginForm = () => {
+const LoginForm = ({ onSubmit }) => {
   return (
-    <form>
-      {/* LoginForm content goes here */}
-    </form>
+    <Box component="form" onSubmit={onSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <TextField label="Email" type="email" name="email" required />
+      <TextField label="Password" type="password" name="password" required />
+      <Button type="submit" variant="contained">Login</Button>
+    </Box>
   );
 };
 

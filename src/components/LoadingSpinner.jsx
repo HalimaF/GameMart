@@ -1,12 +1,10 @@
-import React from "react";
+import { Box, CircularProgress } from "@mui/material";
 
-// TODO: Write LoadingSpinner main code here
-
-const LoadingSpinner = () => {
+const LoadingSpinner = ({ size = 40 }) => {
   return (
-    <div>
-      {/* LoadingSpinner content goes here */}
-    </div>
+    <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+      <CircularProgress size={size} />
+    </Box>
   );
 };
 

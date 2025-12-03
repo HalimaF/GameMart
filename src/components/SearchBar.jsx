@@ -1,12 +1,22 @@
-import React from "react";
+import { TextField, InputAdornment } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 
-// TODO: Write SearchBar main code here
-
-const SearchBar = () => {
+const SearchBar = ({ value, onChange, placeholder = 'Search...' }) => {
   return (
-    <div>
-      {/* SearchBar content goes here */}
-    </div>
+    <TextField
+      fullWidth
+      size="small"
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange}
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <SearchIcon />
+          </InputAdornment>
+        ),
+      }}
+    />
   );
 };
 

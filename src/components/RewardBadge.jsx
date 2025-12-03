@@ -1,12 +1,15 @@
-import React from "react";
+import { Chip } from "@mui/material";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 
-// TODO: Write RewardBadge main code here
-
-const RewardBadge = () => {
+const RewardBadge = ({ label, color = 'primary' }) => {
   return (
-    <span>
-      {/* RewardBadge content goes here */}
-    </span>
+    <Chip
+      icon={<EmojiEventsIcon />}
+      label={label}
+      color={color}
+      variant="outlined"
+      size="small"
+    />
   );
 };
 

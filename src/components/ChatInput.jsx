@@ -1,10 +1,18 @@
-import React from "react";
+import { TextField, IconButton, Box } from "@mui/material";
 
-// TODO: Write ChatInput main code here
-
-const ChatInput = () => {
+const ChatInput = ({ value, onChange, onSend }) => {
   return (
-    <input />
+    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+      <TextField
+        fullWidth
+        size="small"
+        placeholder="Type a message..."
+        value={value}
+        onChange={onChange}
+        onKeyPress={(e) => e.key === 'Enter' && onSend?.()}
+      />
+      <IconButton color="primary" onClick={onSend}>Send</IconButton>
+    </Box>
   );
 };
 

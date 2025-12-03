@@ -1,12 +1,10 @@
-import React from "react";
+import { Box, Paper } from "@mui/material";
 
-// TODO: Write MiniGame main code here
-
-const MiniGame = () => {
+const MiniGame = ({ children }) => {
   return (
-    <div>
-      {/* MiniGame content goes here */}
-    </div>
+    <Paper sx={{ p: 2, background: '#0b1220', border: '1px solid #30363d' }}>
+      <Box>{children}</Box>
+    </Paper>
   );
 };
 
