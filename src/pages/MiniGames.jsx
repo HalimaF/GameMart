@@ -3,6 +3,9 @@ import { Container, Typography, Box, Paper, TextField, Grid, Button, Chip, Stack
 import { FiHeart } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import miniGames from "../data/minigames.json";
+
+const API_URL = 'http://localhost:5000/api';
+
 // Only show games from hosts that typically allow embedding
 const ALLOW_HOSTS = [
   "v0games.vercel.app",
@@ -11,8 +14,14 @@ const ALLOW_HOSTS = [
   "wayou.github.io",
   "phoboslab.org",
   "xproger.info",
+  "hexgl.bkcore.com",
   "bkcore.com",
-  "killedbyapixel.github.io"
+  "killedbyapixel.github.io",
+  "codeincomplete.com",
+  "graememcc.co.uk",
+  "fragglet.github.io",
+  "mindustrygame.github.io",
+  "linuxconsulting.ro"
 ];
 
 const hostFromUrl = (url) => {
@@ -29,7 +38,18 @@ import PageHeading from "../components/PageHeading";
 const MiniGames = () => {
   const [scrollY, setScrollY] = useState(0);
   const [query, setQuery] = useState("");
-  const allowedGames = miniGames.filter(g => isAllowedHost(g.src));
+  
+  // Load minigames from localStorage (admin changes) or fallback to JSON file
+  const [miniGamesData, setMiniGamesData] = useState(() => {
+    try {
+      const saved = localStorage.getItem('gm:minigames');
+      return saved ? JSON.parse(saved) : miniGames;
+    } catch {
+      return miniGames;
+    }
+  });
+  
+  const allowedGames = miniGamesData.filter(g => isAllowedHost(g.src));
   const [list, setList] = useState(allowedGames);
   const [category, setCategory] = useState("All");
   const [favorites, setFavorites] = useState(() => {
@@ -45,10 +65,40 @@ const MiniGames = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+  
+  // Refresh minigames from backend every 3 seconds to catch admin changes
+  useEffect(() => {
+    const loadGames = async () => {
+      try {
+        const response = await fetch(`${API_URL}/minigames`);
+        if (response.ok) {
+          const data = await response.json();
+          setMiniGamesData(data);
+          localStorage.setItem('gm:minigames', JSON.stringify(data));
+        }
+      } catch (error) {
+        console.error('Error loading minigames from backend:', error);
+        // Fallback to localStorage
+        try {
+          const saved = localStorage.getItem('gm:minigames');
+          if (saved) {
+            setMiniGamesData(JSON.parse(saved));
+          }
+        } catch (err) {
+          console.error('Error loading from localStorage:', err);
+        }
+      }
+    };
+    
+    loadGames(); // Load immediately
+    const interval = setInterval(loadGames, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const q = query.trim().toLowerCase();
-    let filtered = allowedGames;
+    const allowedGamesUpdated = miniGamesData.filter(g => isAllowedHost(g.src));
+    let filtered = allowedGamesUpdated;
     if (category !== "All") {
       filtered = filtered.filter(g => (g.category || "").toLowerCase() === category.toLowerCase());
     }
@@ -59,7 +109,7 @@ const MiniGames = () => {
       });
     }
     setList(filtered);
-  }, [query, category]);
+  }, [query, category, miniGamesData]);
 
   useEffect(() => { localStorage.setItem("mg:favorites", JSON.stringify(favorites)); }, [favorites]);
   useEffect(() => { localStorage.setItem("mg:recent", JSON.stringify(recent)); }, [recent]);
@@ -76,7 +126,8 @@ const MiniGames = () => {
     setFavorites((prev) => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
-  const categories = ["All", ...Array.from(new Set(allowedGames.map(g => g.category || "Other")))];
+  const allowedGamesUpdated = miniGamesData.filter(g => isAllowedHost(g.src));
+  const categories = ["All", ...Array.from(new Set(allowedGamesUpdated.map(g => g.category || "Other")))];
 
   const categoryStyle = (c) => {
     const key = (c || 'Other').toLowerCase();

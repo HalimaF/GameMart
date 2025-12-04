@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
+import { formatPKR } from "../../utils/currency";
 import '../Home.css';
 
 const AdminOrders = () => {
@@ -21,11 +22,11 @@ const AdminOrders = () => {
   }, [user, navigate]);
 
   const orders = [
-    { id: 1001, customer: 'GamerPro123', items: 3, total: 159.97, status: 'Completed', date: '2025-12-01' },
-    { id: 1002, customer: 'ProPlayer99', items: 1, total: 59.99, status: 'Processing', date: '2025-12-01' },
-    { id: 1003, customer: 'GameMaster456', items: 2, total: 119.98, status: 'Shipped', date: '2025-11-30' },
-    { id: 1004, customer: 'NinjaGamer', items: 4, total: 219.96, status: 'Completed', date: '2025-11-30' },
-    { id: 1005, customer: 'PixelHunter', items: 1, total: 49.99, status: 'Processing', date: '2025-11-29' },
+    { id: 1001, customer: 'GamerPro123', items: 3, total: 15997, status: 'Completed', date: '2025-12-01' },
+    { id: 1002, customer: 'ProPlayer99', items: 1, total: 5999, status: 'Processing', date: '2025-12-01' },
+    { id: 1003, customer: 'GameMaster456', items: 2, total: 11998, status: 'Shipped', date: '2025-11-30' },
+    { id: 1004, customer: 'NinjaGamer', items: 4, total: 21996, status: 'Completed', date: '2025-11-30' },
+    { id: 1005, customer: 'PixelHunter', items: 1, total: 4999, status: 'Processing', date: '2025-11-29' },
   ];
 
   const getStatusColor = (status) => {
@@ -79,7 +80,7 @@ const AdminOrders = () => {
                   <td style={{ padding: '16px', color: 'var(--text)', fontWeight: '600' }}>#{order.id}</td>
                   <td style={{ padding: '16px', color: 'var(--text)' }}>{order.customer}</td>
                   <td style={{ padding: '16px', color: 'var(--text-dim)' }}>{order.items}</td>
-                  <td style={{ padding: '16px', color: '#86efac', fontWeight: '700', fontSize: '16px' }}>${order.total}</td>
+                  <td style={{ padding: '16px', color: '#86efac', fontWeight: '700', fontSize: '16px' }}>{formatPKR(order.total)}</td>
                   <td style={{ padding: '16px' }}>
                     <span className="game-tag" style={{ 
                       background: getStatusColor(order.status).bg,

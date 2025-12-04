@@ -1,29 +1,28 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
+import minigamesData from "../../data/minigames.json";
 import '../Home.css';
 import PageHeading from "../../components/PageHeading";
+
+const API_URL = 'http://localhost:5000/api';
 
 const MiniGameManagement = () => {
   const [scrollY, setScrollY] = useState(0);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    difficulty: 'Easy',
-    points: '',
-    image: ''
+    title: '',
+    src: '',
+    category: 'Arcade',
+    tags: '',
+    thumbnail: '',
+    allowSameOriginSandbox: true
   });
   const { user } = useUser();
   const navigate = useNavigate();
-
-  // Sample minigames data
-  const [minigames] = useState([
-    { id: 1, name: 'Snake Game', difficulty: 'Easy', points: 100, image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400' },
-    { id: 2, name: 'Memory Match', difficulty: 'Medium', points: 200, image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400' },
-    { id: 3, name: 'Puzzle Quest', difficulty: 'Hard', points: 300, image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400' },
-  ]);
+  const [minigames, setMinigames] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -37,25 +36,124 @@ const MiniGameManagement = () => {
     }
   }, [user, navigate]);
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-        setFormData({ ...formData, image: reader.result });
-      };
-      reader.readAsDataURL(file);
+  useEffect(() => {
+    const loadGames = async () => {
+      try {
+        // Try to fetch from backend first
+        const response = await fetch(`${API_URL}/minigames`);
+        if (response.ok) {
+          const data = await response.json();
+          setMinigames(data);
+          // Also update localStorage for offline access
+          localStorage.setItem('gm:minigames', JSON.stringify(data));
+        } else {
+          // Fallback to localStorage
+          const saved = localStorage.getItem('gm:minigames');
+          setMinigames(saved ? JSON.parse(saved) : minigamesData);
+        }
+      } catch (error) {
+        console.error('Error loading minigames:', error);
+        // Fallback to localStorage
+        const saved = localStorage.getItem('gm:minigames');
+        setMinigames(saved ? JSON.parse(saved) : minigamesData);
+      }
+    };
+    
+    loadGames();
+    const interval = setInterval(loadGames, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const saveMinigames = async (games) => {
+    try {
+      setLoading(true);
+      // Save to backend
+      const response = await fetch(`${API_URL}/minigames`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(games)
+      });
+      
+      if (response.ok) {
+        // Also save to localStorage
+        localStorage.setItem('gm:minigames', JSON.stringify(games));
+        setMinigames(games);
+        console.log('Mini games saved to backend and localStorage');
+      } else {
+        // If backend fails, still save to localStorage
+        localStorage.setItem('gm:minigames', JSON.stringify(games));
+        setMinigames(games);
+        console.warn('Backend save failed, saved to localStorage only');
+      }
+    } catch (error) {
+      console.error('Error saving minigames:', error);
+      // Fallback to localStorage only
+      localStorage.setItem('gm:minigames', JSON.stringify(games));
+      setMinigames(games);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = (game) => {
+    setEditingId(game.id);
+    setFormData({
+      title: game.title || '',
+      src: game.src || '',
+      category: game.category || 'Arcade',
+      tags: Array.isArray(game.tags) ? game.tags.join(', ') : '',
+      thumbnail: game.thumbnail || '',
+      allowSameOriginSandbox: game.allowSameOriginSandbox !== false
+    });
+    setShowAddModal(true);
+  };
+
+  const handleDelete = (id) => {
+    if (confirm('Are you sure you want to delete this mini game?')) {
+      const updated = minigames.filter(g => g.id !== id);
+      saveMinigames(updated);
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('New MiniGame:', formData);
-    // Save to database/localStorage here
+    
+    const gameData = {
+      ...formData,
+      tags: formData.tags.split(',').map(t => t.trim()).filter(t => t),
+      id: editingId || `game-${Date.now()}`
+    };
+
+    if (editingId) {
+      // Update existing game
+      const updated = minigames.map(g => g.id === editingId ? gameData : g);
+      saveMinigames(updated);
+    } else {
+      // Add new game
+      saveMinigames([...minigames, gameData]);
+    }
+
     setShowAddModal(false);
-    setFormData({ name: '', description: '', difficulty: 'Easy', points: '', image: '' });
-    setImagePreview(null);
+    setEditingId(null);
+    setFormData({ title: '', src: '', category: 'Arcade', tags: '', thumbnail: '', allowSameOriginSandbox: true });
+  };
+
+  const categories = ['Arcade', 'Puzzle', 'Racing', 'Action', 'FPS', 'Third-Person', 'City-Building', 'Shoot \'em up', 'Real-Time strategies', 'Turn-Based strategies'];
+
+  const getDifficultyByCategory = (category) => {
+    const difficultyMap = {
+      'Arcade': 'Easy',
+      'Puzzle': 'Medium',
+      'Racing': 'Medium',
+      'Action': 'Hard',
+      'FPS': 'Hard',
+      'Third-Person': 'Hard',
+      'City-Building': 'Medium',
+      'Shoot \'em up': 'Hard',
+      'Real-Time strategies': 'Hard',
+      'Turn-Based strategies': 'Medium'
+    };
+    return difficultyMap[category] || 'Easy';
   };
 
   return (
@@ -67,232 +165,184 @@ const MiniGameManagement = () => {
       </div>
 
       <div className="featured">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-          <div style={{ flex: 1 }}>
-            <PageHeading title="MiniGame Management" subtitle="Add and manage mini games" align="left" />
+        <div className="flex-between mb-32">
+          <div className="flex-1">
+            <PageHeading title="MiniGame Management" align="left" />
           </div>
           <button className="btn-primary" onClick={() => setShowAddModal(true)}>Add New MiniGame</button>
         </div>
 
         <div className="games-grid">
-          {minigames.map((game, i) => (
-            <div key={game.id} className="game-card" style={{ animationDelay: `${i * 0.1}s` }}>
-              <div className="game-card-inner">
-                <div className="game-card-bg"></div>
-                {game.image && (
-                  <img src={game.image} alt={game.name} style={{
-                    width: '100%',
-                    height: '180px',
-                    objectFit: 'cover',
-                    borderRadius: '12px',
-                    marginBottom: '16px'
-                  }} />
-                )}
-                <div className="game-tag" style={{ 
-                  background: game.difficulty === 'Easy' ? 'rgba(134, 239, 172, 0.2)' : 
-                              game.difficulty === 'Medium' ? 'rgba(255, 234, 0, 0.2)' : 
-                              'rgba(239, 68, 68, 0.2)',
-                  borderColor: game.difficulty === 'Easy' ? 'rgba(134, 239, 172, 0.5)' : 
-                               game.difficulty === 'Medium' ? 'rgba(255, 234, 0, 0.5)' : 
-                               'rgba(239, 68, 68, 0.5)',
-                  color: game.difficulty === 'Easy' ? '#86efac' : 
-                         game.difficulty === 'Medium' ? '#ffea00' : '#ef4444'
-                }}>
-                  {game.difficulty}
-                </div>
-                <div className="game-title" style={{ fontSize: '20px', marginTop: '12px' }}>{game.name}</div>
-                <div style={{ color: 'var(--primary)', fontSize: '18px', fontWeight: '700', marginTop: '8px' }}>
-                  {game.points} points
-                </div>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-                  <button className="game-btn" style={{ flex: 1 }}>Edit</button>
-                  <button className="game-btn" style={{ flex: 1, background: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.3)' }}>Delete</button>
+          {minigames.map((game, i) => {
+            const difficulty = getDifficultyByCategory(game.category);
+            return (
+              <div key={game.id} className="game-card" style={{ animationDelay: `${i * 0.1}s` }}>
+                <div className="game-card-inner">
+                  <div className="game-card-bg"></div>
+                  {game.thumbnail ? (
+                    <img src={game.thumbnail} alt={game.title} className="game-image game-image-tall" />
+                  ) : (
+                    <div className="minigame-placeholder">
+                      🎮
+                    </div>
+                  )}
+                  <div className={`game-tag ${
+                    difficulty === 'Easy' ? 'difficulty-easy' : 
+                    difficulty === 'Medium' ? 'difficulty-medium' : 
+                    'difficulty-hard'
+                  }`}>
+                    {game.category}
+                  </div>
+                  <div className="game-title game-title-sm">{game.title}</div>
+                  <div className="tag-container">
+                    {game.tags && game.tags.slice(0, 3).map((tag, idx) => (
+                      <span key={idx} className="tag-badge">
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="button-group-spaced">
+                    <button className="game-btn btn-flex-1" onClick={() => handleEdit(game)}>Edit</button>
+                    <button 
+                      className="game-btn btn-flex-1 btn-delete" 
+                      onClick={() => handleDelete(game.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {/* Add MiniGame Modal */}
+        {/* Add/Edit MiniGame Modal */}
         {showAddModal && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.8)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-            backdropFilter: 'blur(10px)'
-          }}>
-            <div style={{
-              background: 'rgba(17, 24, 39, 0.95)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '20px',
-              padding: '32px',
-              maxWidth: '600px',
-              width: '90%',
-              maxHeight: '90vh',
-              overflowY: 'auto'
-            }}>
-              <h2 style={{ color: 'var(--text)', marginBottom: '24px', fontSize: '28px' }}>
-                Add New <span className="gradient-text">MiniGame</span>
+          <div className="modal-overlay">
+            <div className="modal-container">
+              <h2 className="modal-title">
+                {editingId ? 'Edit' : 'Add New'} <span className="gradient-text">MiniGame</span>
               </h2>
               
               <form onSubmit={handleSubmit}>
-                {/* Image Upload */}
-                <div style={{ marginBottom: '24px' }}>
-                  <label style={{ display: 'block', color: 'var(--text)', marginBottom: '8px', fontWeight: '600' }}>
-                    Game Image *
-                  </label>
-                  <div style={{
-                    border: '2px dashed rgba(255, 0, 200, 0.3)',
-                    borderRadius: '12px',
-                    padding: '24px',
-                    textAlign: 'center',
-                    background: 'rgba(255, 0, 200, 0.05)',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--accent)'}
-                  onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(255, 0, 200, 0.3)'}
-                  >
-                    <input 
-                      type="file" 
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      style={{ display: 'none' }}
-                      id="minigame-image"
-                      required
-                    />
-                    <label htmlFor="minigame-image" style={{ cursor: 'pointer' }}>
-                      {imagePreview ? (
-                        <img src={imagePreview} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '8px' }} />
-                      ) : (
-                        <>
-                          <div style={{ fontSize: '48px', marginBottom: '8px' }}>🎮</div>
-                          <div style={{ color: 'var(--accent)', fontWeight: '600', marginBottom: '4px' }}>
-                            Click to upload image
-                          </div>
-                          <div style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
-                            PNG, JPG, GIF up to 10MB
-                          </div>
-                        </>
-                      )}
-                    </label>
-                  </div>
-                </div>
-
-                {/* Name */}
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'block', color: 'var(--text)', marginBottom: '8px', fontWeight: '600' }}>
-                    Game Name *
+                {/* Game Title */}
+                <div className="form-group">
+                  <label className="form-label">
+                    Game Title *
                   </label>
                   <input
                     type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     required
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      background: 'rgba(0, 0, 0, 0.3)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: '8px',
-                      color: 'var(--text)',
-                      fontSize: '16px'
-                    }}
-                    placeholder="Enter game name"
+                    className="form-input"
+                    placeholder="e.g., Floppy Bird"
                   />
                 </div>
 
-                {/* Description */}
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'block', color: 'var(--text)', marginBottom: '8px', fontWeight: '600' }}>
-                    Description
+                {/* Game URL/Embed Link */}
+                <div className="form-group">
+                  <label className="form-label">
+                    Game URL (Embed Link) *
                   </label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={3}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      background: 'rgba(0, 0, 0, 0.3)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: '8px',
-                      color: 'var(--text)',
-                      fontSize: '16px',
-                      resize: 'vertical'
-                    }}
-                    placeholder="Brief description of the game"
+                  <input
+                    type="url"
+                    value={formData.src}
+                    onChange={(e) => setFormData({ ...formData, src: e.target.value })}
+                    required
+                    className="form-input"
+                    placeholder="https://example.com/game"
+                  />
+                  <div className="form-hint">
+                    Enter the direct URL to embed the game
+                  </div>
+                </div>
+
+                {/* Category */}
+                <div className="form-group">
+                  <label className="form-label">
+                    Category *
+                  </label>
+                  <select
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="form-select"
+                  >
+                    {categories.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Tags */}
+                <div className="form-group">
+                  <label className="form-label">
+                    Tags (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.tags}
+                    onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                    className="form-input"
+                    placeholder="e.g., arcade, flappy, bird"
                   />
                 </div>
 
-                {/* Difficulty & Points */}
-                <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', color: 'var(--text)', marginBottom: '8px', fontWeight: '600' }}>
-                      Difficulty *
-                    </label>
-                    <select
-                      value={formData.difficulty}
-                      onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        background: 'rgba(0, 0, 0, 0.3)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        borderRadius: '8px',
-                        color: 'var(--text)',
-                        fontSize: '16px'
-                      }}
-                    >
-                      <option value="Easy">Easy</option>
-                      <option value="Medium">Medium</option>
-                      <option value="Hard">Hard</option>
-                    </select>
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', color: 'var(--text)', marginBottom: '8px', fontWeight: '600' }}>
-                      Points Reward *
-                    </label>
+                {/* Thumbnail URL */}
+                <div className="form-group">
+                  <label className="form-label">
+                    Thumbnail URL (optional)
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.thumbnail}
+                    onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
+                    className="form-input"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                  {formData.thumbnail && (
+                    <div className="mt-12">
+                      <img 
+                        src={formData.thumbnail} 
+                        alt="Preview" 
+                        className="upload-preview"
+                        onError={(e) => e.target.style.display = 'none'}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Allow Same Origin Sandbox */}
+                <div className="mb-24">
+                  <label className="checkbox-label">
                     <input
-                      type="number"
-                      value={formData.points}
-                      onChange={(e) => setFormData({ ...formData, points: e.target.value })}
-                      required
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        background: 'rgba(0, 0, 0, 0.3)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        borderRadius: '8px',
-                        color: 'var(--text)',
-                        fontSize: '16px'
-                      }}
-                      placeholder="100"
+                      type="checkbox"
+                      checked={formData.allowSameOriginSandbox}
+                      onChange={(e) => setFormData({ ...formData, allowSameOriginSandbox: e.target.checked })}
+                      className="checkbox-input"
                     />
+                    <span className="checkbox-text">
+                      Allow Same Origin Sandbox
+                    </span>
+                  </label>
+                  <div className="checkbox-hint">
+                    Enable if the game requires same-origin access
                   </div>
                 </div>
 
                 {/* Buttons */}
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <button type="submit" className="btn-primary" style={{ flex: 1 }}>
-                    Add MiniGame
+                <div className="button-group">
+                  <button type="submit" className="btn-primary btn-flex-1">
+                    {editingId ? 'Update MiniGame' : 'Add MiniGame'}
                   </button>
                   <button 
                     type="button" 
                     onClick={() => {
                       setShowAddModal(false);
-                      setFormData({ name: '', description: '', difficulty: 'Easy', points: '', image: '' });
-                      setImagePreview(null);
+                      setEditingId(null);
+                      setFormData({ title: '', src: '', category: 'Arcade', tags: '', thumbnail: '', allowSameOriginSandbox: true });
                     }}
-                    className="game-btn"
-                    style={{ flex: 1 }}
+                    className="game-btn btn-flex-1"
                   >
                     Cancel
                   </button>

@@ -1,4 +1,3 @@
-// Event-based global store using localStorage. Hooks used: useState, useEffect only.
 import { useState, useEffect } from 'react';
 
 export const UserProvider = ({ children }) => children;

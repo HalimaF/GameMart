@@ -5,6 +5,11 @@ import { useNavigate } from "react-router-dom";
 import EmbeddedMiniGame from "../components/EmbeddedMiniGame";
 import PageHeading from "../components/PageHeading";
 import miniGames from "../data/minigames.json";
+import { useUser } from "../context/UserContext";
+import usersData from "../data/users.json";
+
+const API_URL = 'http://localhost:5000/api';
+
 // Allowed hosts for embedding; others will be hidden from the selector
 const ALLOW_HOSTS = [
   "v0games.vercel.app",
@@ -13,8 +18,14 @@ const ALLOW_HOSTS = [
   "wayou.github.io", // t-rex runner
   "phoboslab.org", // js13k games
   "xproger.info", // openlara
+  "hexgl.bkcore.com",
   "bkcore.com", // hexgl
-  "killedbyapixel.github.io"
+  "killedbyapixel.github.io",
+  "codeincomplete.com", // snake
+  "graememcc.co.uk", // micropolis
+  "fragglet.github.io", // sopwith
+  "mindustrygame.github.io", // mindustry
+  "linuxconsulting.ro" // openpanzer
 ];
 
 const hostFromUrl = (url) => {
@@ -30,35 +41,172 @@ const isAllowedHost = (url) => {
 };
 
 const MiniGame = () => {
+  const { user, setUser } = useUser();
   // Remove built-in/embedded toggle
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
   const [isPlaying, setIsPlaying] = useState(false);
   const [targetX, setTargetX] = useState(50);
   const [targetY, setTargetY] = useState(50);
-  const allowedGames = miniGames.filter(g => isAllowedHost(g.src));
-  const [selectedGameId, setSelectedGameId] = useState(allowedGames?.[0]?.id || "");
+  const [gameStartTime, setGameStartTime] = useState(null);
+  const [xpEarned, setXpEarned] = useState(0);
+  const [showXpAlert, setShowXpAlert] = useState(false);
+  const [playTimer, setPlayTimer] = useState(0);
+  
+  // Load minigames from localStorage (admin changes) or fallback to JSON file
+  const [miniGamesData, setMiniGamesData] = useState(() => {
+    try {
+      const saved = localStorage.getItem('gm:minigames');
+      return saved ? JSON.parse(saved) : miniGames;
+    } catch {
+      return miniGames;
+    }
+  });
+  
+  const [allowedGames, setAllowedGames] = useState([]);
+  const [selectedGameId, setSelectedGameId] = useState("");
   const navigate = useNavigate();
   const [favorites, setFavorites] = useState(() => {
     try { return JSON.parse(localStorage.getItem("mg:favorites") || "[]"); } catch { return []; }
   });
   const [copied, setCopied] = useState(false);
+  
+  // Update allowed games when miniGamesData changes
+  useEffect(() => {
+    const filtered = miniGamesData.filter(g => isAllowedHost(g.src));
+    setAllowedGames(filtered);
+  }, [miniGamesData]);
+  
+  // Refresh minigames from backend every 3 seconds to catch admin changes
+  useEffect(() => {
+    const loadGames = async () => {
+      try {
+        const response = await fetch(`${API_URL}/minigames`);
+        if (response.ok) {
+          const data = await response.json();
+          setMiniGamesData(data);
+          localStorage.setItem('gm:minigames', JSON.stringify(data));
+        }
+      } catch (error) {
+        console.error('Error loading minigames from backend:', error);
+        // Fallback to localStorage
+        try {
+          const saved = localStorage.getItem('gm:minigames');
+          if (saved) {
+            setMiniGamesData(JSON.parse(saved));
+          }
+        } catch (err) {
+          console.error('Error loading from localStorage:', err);
+        }
+      }
+    };
+    
+    loadGames(); // Load immediately
+    const interval = setInterval(loadGames, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     // Read id from URL: /minigame/:id
     const parts = (window.location.pathname || "").split("/").filter(Boolean);
     const id = parts[1] === 'minigame' ? parts[2] : (parts[0] === 'minigame' ? parts[1] : undefined);
-      if (id) {
-        const found = allowedGames.find(g => g.id === id);
-      if (found) setSelectedGameId(found.id);
+    
+    if (id && allowedGames.length > 0) {
+      const found = allowedGames.find(g => g.id === id);
+      if (found) {
+        setSelectedGameId(found.id);
+      } else if (allowedGames[0]) {
+        setSelectedGameId(allowedGames[0].id);
+      }
+    } else if (allowedGames.length > 0 && !selectedGameId) {
+      setSelectedGameId(allowedGames[0].id);
     }
-  }, []);
+  }, [allowedGames]);
 
   useEffect(() => {
-    if (selectedGameId) {
-      navigate(`/minigame/${selectedGameId}`, { replace: true });
+    if (selectedGameId && allowedGames.length > 0) {
+      const currentPath = window.location.pathname;
+      const expectedPath = `/minigame/${selectedGameId}`;
+      if (currentPath !== expectedPath) {
+        navigate(expectedPath, { replace: true });
+      }
     }
-  }, [selectedGameId]);
+  }, [selectedGameId, navigate]);
+
+  // Track when game is loaded and award XP for playing
+  useEffect(() => {
+    if (selectedGameId && user) {
+      setGameStartTime(Date.now());
+      setPlayTimer(0);
+    }
+  }, [selectedGameId, user]);
+
+  // Update play timer every second
+  useEffect(() => {
+    if (gameStartTime && user) {
+      const interval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - gameStartTime) / 1000);
+        setPlayTimer(elapsed);
+      }, 1000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [gameStartTime, user]);
+
+  // Award XP every 30 seconds of continuous play
+  useEffect(() => {
+    if (playTimer > 0 && playTimer % 30 === 0 && user) {
+      const awardXP = async () => {
+        const earnedXP = 10;
+        
+        try {
+          // Get current users
+          const response = await fetch(`${API_URL}/users`);
+          let allUsers = [];
+          
+          if (response.ok) {
+            allUsers = await response.json();
+          } else {
+            const saved = localStorage.getItem('gm:users');
+            allUsers = saved ? JSON.parse(saved) : usersData;
+          }
+          
+          // Update user XP and coins
+          const updatedUsers = allUsers.map(u => {
+            if (u.id === user.id) {
+              return {
+                ...u,
+                xp: (u.xp || 0) + earnedXP,
+                coins: (u.coins || 0) + Math.floor(earnedXP / 2)
+              };
+            }
+            return u;
+          });
+          
+          // Save to backend
+          await fetch(`${API_URL}/users`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedUsers)
+          });
+          
+          // Update local storage and context
+          localStorage.setItem('gm:users', JSON.stringify(updatedUsers));
+          const updatedUser = updatedUsers.find(u => u.id === user.id);
+          if (updatedUser) {
+            setUser(updatedUser);
+            localStorage.setItem('gm:user', JSON.stringify(updatedUser));
+            setXpEarned(earnedXP);
+            setShowXpAlert(true);
+          }
+        } catch (error) {
+          console.error('Error updating XP:', error);
+        }
+      };
+      
+      awardXP();
+    }
+  }, [playTimer, user]);
 
   useEffect(() => {
     localStorage.setItem("mg:favorites", JSON.stringify(favorites));
@@ -110,8 +258,14 @@ const MiniGame = () => {
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
         <PageHeading title="Play" subtitle="Choose and play mini games" align="left" />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {user && playTimer > 0 && (
+            <Paper sx={{ px: 2, py: 1, background: '#0b1220', border: '1px solid #30363d', display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography sx={{ color: '#93c5fd', fontWeight: 600, fontSize: '14px' }}>⏱️ {Math.floor(playTimer / 60)}:{(playTimer % 60).toString().padStart(2, '0')}</Typography>
+              <Typography sx={{ color: '#9ca3af', fontSize: '12px' }}>Next reward in {30 - (playTimer % 30)}s</Typography>
+            </Paper>
+          )}
           {(() => {
-            const g = miniGames.find((x) => x.id === selectedGameId);
+            const g = miniGamesData.find((x) => x.id === selectedGameId);
             if (!g) return null;
             const isFav = favorites.includes(g.id);
             return (
@@ -183,6 +337,11 @@ const MiniGame = () => {
       <Snackbar open={copied} autoHideDuration={2000} onClose={() => setCopied(false)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
         <Alert severity="success" variant="filled" onClose={() => setCopied(false)} sx={{ width: '100%' }}>
           Link copied to clipboard
+        </Alert>
+      </Snackbar>
+      <Snackbar open={showXpAlert} autoHideDuration={4000} onClose={() => setShowXpAlert(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+        <Alert severity="success" variant="filled" onClose={() => setShowXpAlert(false)} sx={{ width: '100%', background: '#22c55e' }}>
+          🎮 You earned {xpEarned} XP and {Math.floor(xpEarned / 2)} coins for playing!
         </Alert>
       </Snackbar>
     </Container>

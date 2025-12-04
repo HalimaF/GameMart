@@ -1,14 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import users from "../data/users.json";
+import usersData from "../data/users.json";
 import { useUser } from "../context/UserContext";
 import './Home.css';
+
+const API_URL = 'http://localhost:5000/api';
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [scrollY, setScrollY] = useState(0);
+  const [users, setUsers] = useState(usersData);
   const { setUser } = useUser();
   const navigate = useNavigate();
 
@@ -18,10 +21,38 @@ const Login = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Load users from backend
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const response = await fetch(`${API_URL}/users`);
+        if (response.ok) {
+          const data = await response.json();
+          setUsers(data);
+        } else {
+          const saved = localStorage.getItem('gm:users');
+          setUsers(saved ? JSON.parse(saved) : usersData);
+        }
+      } catch (error) {
+        console.error('Error loading users:', error);
+        const saved = localStorage.getItem('gm:users');
+        setUsers(saved ? JSON.parse(saved) : usersData);
+      }
+    };
+    
+    loadUsers();
+  }, []);
+
   const onLogin = () => {
     const match = users.find(u => u.email === email && u.password === password);
     if (!match) {
       setError('Invalid credentials');
+      return;
+    }
+    
+    // Check if seller is approved
+    if (match.role === 'seller' && match.status === 'pending') {
+      setError('Your seller account is pending approval. Please wait for admin verification.');
       return;
     }
     
@@ -35,7 +66,8 @@ const Login = () => {
       coins: match.coins,
       xp: match.xp,
       badges: match.badges,
-      joinDate: match.joinDate
+      joinDate: match.joinDate,
+      status: match.status
     };
     
     setUser(userData);

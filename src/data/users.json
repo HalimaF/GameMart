@@ -8,7 +8,11 @@
     "coins": 5000,
     "xp": 10000,
     "tier": "Platinum",
-    "badges": ["Founder", "Admin", "All Achievements"],
+    "badges": [
+      "Founder",
+      "Admin",
+      "All Achievements"
+    ],
     "joinDate": "2025-01-01"
   },
   {
@@ -21,7 +25,11 @@
     "coins": 3500,
     "xp": 7200,
     "tier": "Gold",
-    "badges": ["Top Seller", "100 Sales", "5 Star Rating"],
+    "badges": [
+      "Top Seller",
+      "100 Sales",
+      "5 Star Rating"
+    ],
     "joinDate": "2025-01-10",
     "storeName": "Epic Games Store",
     "totalSales": 156
@@ -35,7 +43,11 @@
     "coins": 2450,
     "xp": 5680,
     "tier": "Gold",
-    "badges": ["First Purchase", "10 Games", "Review Master"],
+    "badges": [
+      "First Purchase",
+      "10 Games",
+      "Review Master"
+    ],
     "joinDate": "2025-01-15"
   },
   {
@@ -47,7 +59,10 @@
     "coins": 1200,
     "xp": 3400,
     "tier": "Silver",
-    "badges": ["First Purchase", "5 Games"],
+    "badges": [
+      "First Purchase",
+      "5 Games"
+    ],
     "joinDate": "2025-02-01"
   },
   {
@@ -79,5 +94,40 @@
     "joinDate": "2025-11-30",
     "storeName": "Indie Games Hub",
     "totalSales": 0
+  },
+  {
+    "id": 1764822966806,
+    "username": "Asma",
+    "email": "asma@gmail.com",
+    "role": "buyer",
+    "tier": "Bronze",
+    "coins": 0,
+    "xp": 0,
+    "badges": [],
+    "joinDate": "2025-12-04T04:36:06.806Z"
+  },
+  {
+    "id": 1764823825383,
+    "username": "Asma",
+    "email": "asma@gmail.com",
+    "role": "buyer",
+    "tier": "Bronze",
+    "coins": 210,
+    "xp": 120,
+    "badges": [],
+    "joinDate": "2025-12-04T04:50:25.383Z",
+    "status": "approved"
+  },
+  {
+    "id": 1764824696455,
+    "username": "Halima",
+    "email": "halima1939531@gmail.com",
+    "role": "seller",
+    "tier": "Bronze",
+    "coins": 0,
+    "xp": 0,
+    "badges": [],
+    "joinDate": "2025-12-04T05:04:56.455Z",
+    "status": "approved"
   }
 ]

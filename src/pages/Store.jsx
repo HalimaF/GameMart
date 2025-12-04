@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { formatPKR } from "../utils/currency";
-import games from "../data/games.json";
+import gamesData from "../data/games.json";
 // import GameCard from "../components/GameCard";
 import { useUser } from "../context/UserContext";
+
+const API_URL = 'http://localhost:5000/api';
 // SellerProducts card layout for Store
 const StoreGameCard = ({ game, onAddToCart, onRent }) => (
   <div className="game-card-inner">
@@ -38,11 +40,70 @@ import PageHeading from '../components/PageHeading';
 
 const Store = () => {
   const [scrollY, setScrollY] = useState(0);
+  const [games, setGames] = useState([]);
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Load games from backend API and localStorage
+  useEffect(() => {
+    const loadGames = async () => {
+      try {
+        // Try to fetch from backend first
+        const response = await fetch(`${API_URL}/products`);
+        if (response.ok) {
+          const data = await response.json();
+          setGames(data);
+          localStorage.setItem('admin:products', JSON.stringify(data));
+        } else {
+          // Fallback to localStorage
+          const adminProducts = localStorage.getItem('admin:products');
+          const sellerProducts = localStorage.getItem('seller:products');
+          
+          let allGames = [];
+          
+          if (adminProducts) {
+            allGames = [...allGames, ...JSON.parse(adminProducts)];
+          }
+          if (sellerProducts) {
+            allGames = [...allGames, ...JSON.parse(sellerProducts)];
+          }
+          
+          if (allGames.length === 0) {
+            allGames = gamesData;
+          }
+          
+          setGames(allGames);
+        }
+      } catch (error) {
+        console.error('Error loading games:', error);
+        // Fallback to localStorage
+        const adminProducts = localStorage.getItem('admin:products');
+        const sellerProducts = localStorage.getItem('seller:products');
+        
+        let allGames = [];
+        
+        if (adminProducts) {
+          allGames = [...allGames, ...JSON.parse(adminProducts)];
+        }
+        if (sellerProducts) {
+          allGames = [...allGames, ...JSON.parse(sellerProducts)];
+        }
+        
+        if (allGames.length === 0) {
+          allGames = gamesData;
+        }
+        
+        setGames(allGames);
+      }
+    };
+    
+    loadGames();
+    const interval = setInterval(loadGames, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   const { user } = useUser();

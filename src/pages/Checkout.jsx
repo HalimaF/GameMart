@@ -21,7 +21,7 @@ const Checkout = () => {
     try { return JSON.parse(localStorage.getItem('gm:cart') || '[]'); } catch { return []; }
   })();
   const subtotal = cart.reduce((sum, item) => sum + (item.price || 0) * (item.qty || 1), 0);
-  const shipping = subtotal > 20000 ? 0 : 500; // Free shipping over PKR 20k, else PKR 500
+  const shipping = subtotal > 2000 ? 0 : 500; // Free shipping over PKR 2k, else PKR 500
   const tax = Math.round(subtotal * 0.08); // approx 8%
   const total = subtotal + shipping + tax;
 

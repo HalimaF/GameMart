@@ -6,6 +6,8 @@ import games from "../../data/games.json";
 import '../Home.css';
 import PageHeading from '../../components/PageHeading';
 
+const API_URL = 'http://localhost:5000/api';
+
 const SellerProducts = () => {
   const [scrollY, setScrollY] = useState(0);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -53,8 +55,37 @@ const SellerProducts = () => {
     } catch { return games.slice(0, 8); }
   });
 
+  // Save to backend whenever products change
+  const saveProductsToBackend = async (products) => {
+    try {
+      // Get existing products from backend
+      const response = await fetch(`${API_URL}/products`);
+      let allProducts = [];
+      
+      if (response.ok) {
+        allProducts = await response.json();
+      }
+      
+      // Remove old seller products and add updated ones
+      const otherProducts = allProducts.filter(p => !myProducts.find(mp => mp.id === p.id));
+      const updatedProducts = [...otherProducts, ...products];
+      
+      // Save to backend
+      await fetch(`${API_URL}/products`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedProducts)
+      });
+    } catch (error) {
+      console.error('Error saving to backend:', error);
+    }
+  };
+
   useEffect(() => {
-    try { localStorage.setItem('seller:products', JSON.stringify(myProducts)); } catch {}
+    try { 
+      localStorage.setItem('seller:products', JSON.stringify(myProducts));
+      saveProductsToBackend(myProducts);
+    } catch {}
   }, [myProducts]);
 
   const onEdit = (game) => {
@@ -77,10 +108,16 @@ const SellerProducts = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const productData = {
+      ...formData,
+      price: parseFloat(formData.price) || 0,
+      stock: parseInt(formData.stock) || 0
+    };
+    
     if (editingId) {
-      setMyProducts(prev => prev.map(p => p.id === editingId ? { ...p, ...formData, id: editingId } : p));
+      setMyProducts(prev => prev.map(p => p.id === editingId ? { ...p, ...productData, id: editingId } : p));
     } else {
-      const newProd = { ...formData, id: Date.now() };
+      const newProd = { ...productData, id: Date.now() };
       setMyProducts(prev => [newProd, ...prev]);
     }
     setShowAddModal(false);
@@ -98,7 +135,7 @@ const SellerProducts = () => {
       </div>
 
       <div className="featured">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+        <div className="flex-between mb-32">
           <PageHeading title="My" highlight="Products" center={false} />
           <button className="btn-primary" onClick={() => setShowAddModal(true)}>Add New Product</button>
         </div>
@@ -109,23 +146,17 @@ const SellerProducts = () => {
               <div className="game-card-inner">
                 <div className="game-card-bg"></div>
                 {game.image && (
-                  <img src={game.image} alt={game.title} style={{
-                    width: '100%',
-                    height: '160px',
-                    objectFit: 'cover',
-                    borderRadius: '12px',
-                    marginBottom: '12px'
-                  }} />
+                  <img src={game.image} alt={game.title} className="game-image" />
                 )}
                 <div className="game-tag">{game.genre}</div>
-                <div className="game-title" style={{ fontSize: '18px', marginTop: '8px' }}>{game.title}</div>
-                <div className="game-price" style={{ marginTop: '8px' }}>{formatPKR(game.price)}</div>
-                <div style={{ color: 'var(--text-dim)', fontSize: '14px', marginTop: '4px' }}>
-                  Stock: <span style={{ color: game.stock > 10 ? '#86efac' : '#fca5a5', fontWeight: '600' }}>{game.stock}</span>
+                <div className="game-title game-title-sm">{game.title}</div>
+                <div className="game-price game-price-container">{formatPKR(game.price)}</div>
+                <div className="stock-info">
+                  Stock: <span className={game.stock > 10 ? 'stock-high' : 'stock-low'}>{game.stock}</span>
                 </div>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-                  <button className="game-btn" onClick={() => onEdit(game)} style={{ flex: 1, padding: '10px', fontSize: '13px' }}>Edit</button>
-                  <button className="game-btn" onClick={() => onDelete(game.id)} style={{ flex: 1, padding: '10px', fontSize: '13px', background: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.3)' }}>Delete</button>
+                <div className="button-group-spaced">
+                  <button className="game-btn btn-flex-1 btn-medium" onClick={() => onEdit(game)}>Edit</button>
+                  <button className="game-btn btn-flex-1 btn-medium btn-delete" onClick={() => onDelete(game.id)}>Delete</button>
                 </div>
               </div>
             </div>
@@ -133,69 +164,40 @@ const SellerProducts = () => {
         </div>
         {/* Add Product Modal */}
         {showAddModal && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.8)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-            backdropFilter: 'blur(10px)'
-          }}>
-            <div style={{
-              background: 'rgba(17, 24, 39, 0.95)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '20px',
-              padding: '32px',
-              maxWidth: '600px',
-              width: '90%',
-              maxHeight: '90vh',
-              overflowY: 'auto'
-            }}>
-              <h2 style={{ color: 'var(--text)', marginBottom: '24px', fontSize: '28px' }}>
+          <div className="modal-overlay">
+            <div className="modal-container">
+              <h2 className="modal-title">
                 {editingId ? 'Edit' : 'Add New'} <span className="gradient-text">Product</span>
               </h2>
               
               <form onSubmit={handleSubmit}>
                 {/* Image Upload */}
-                <div style={{ marginBottom: '24px' }}>
-                  <label style={{ display: 'block', color: 'var(--text)', marginBottom: '8px', fontWeight: '600' }}>
+                <div className="mb-24">
+                  <label className="form-label">
                     Product Image *
                   </label>
-                  <div style={{
-                    border: '2px dashed rgba(0, 255, 231, 0.3)',
-                    borderRadius: '12px',
-                    padding: '24px',
-                    textAlign: 'center',
-                    background: 'rgba(0, 255, 231, 0.05)',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
-                  }}
+                  <div className="upload-box"
                   onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
-                  onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(0, 255, 231, 0.3)'}
+                  onMouseLeave={(e) => e.currentTarget.style.borderColor = 'rgba(0, 255, 231, 0.3)'}  
                   >
                     <input 
                       type="file" 
                       accept="image/*"
                       onChange={handleImageChange}
-                      style={{ display: 'none' }}
+                      className="input-hidden"
                       id="product-image"
-                      required
+                      required={!editingId}
                     />
-                    <label htmlFor="product-image" style={{ cursor: 'pointer' }}>
+                    <label htmlFor="product-image" className="cursor-pointer">
                       {imagePreview ? (
-                        <img src={imagePreview} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '8px' }} />
+                        <img src={imagePreview} alt="Preview" className="upload-preview" />
                       ) : (
                         <>
-                          <div style={{ fontSize: '48px', marginBottom: '8px' }}>📸</div>
-                          <div style={{ color: 'var(--primary)', fontWeight: '600', marginBottom: '4px' }}>
+                          <div className="upload-icon">📸</div>
+                          <div className="upload-text">
                             Click to upload image
                           </div>
-                          <div style={{ color: 'var(--text-dim)', fontSize: '14px' }}>
+                          <div className="upload-hint">
                             PNG, JPG, GIF up to 10MB
                           </div>
                         </>
@@ -205,8 +207,8 @@ const SellerProducts = () => {
                 </div>
 
                 {/* Title */}
-                <div style={{ marginBottom: '20px' }}>
-                  <label style={{ display: 'block', color: 'var(--text)', marginBottom: '8px', fontWeight: '600' }}>
+                <div className="form-group">
+                  <label className="form-label">
                     Title *
                   </label>
                   <input
@@ -214,37 +216,21 @@ const SellerProducts = () => {
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     required
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      background: 'rgba(0, 0, 0, 0.3)',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      borderRadius: '8px',
-                      color: 'var(--text)',
-                      fontSize: '16px'
-                    }}
+                    className="form-input"
                     placeholder="Enter product title"
                   />
                 </div>
 
                 {/* Console & Genre */}
-                <div style={{ display: 'flex', gap: '16px', marginBottom: '20px' }}>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', color: 'var(--text)', marginBottom: '8px', fontWeight: '600' }}>
+                <div className="form-group-double">
+                  <div className="form-group-flex-1">
+                    <label className="form-label">
                       Console *
                     </label>
                     <select
                       value={formData.console}
                       onChange={(e) => setFormData({ ...formData, console: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        background: 'rgba(0, 0, 0, 0.3)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        borderRadius: '8px',
-                        color: 'var(--text)',
-                        fontSize: '16px'
-                      }}
+                      className="form-select"
                     >
                       <option value="PS5">PS5</option>
                       <option value="PS4">PS4</option>
@@ -254,22 +240,14 @@ const SellerProducts = () => {
                       <option value="Nintendo Switch">Nintendo Switch</option>
                     </select>
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', color: 'var(--text)', marginBottom: '8px', fontWeight: '600' }}>
+                  <div className="form-group-flex-1">
+                    <label className="form-label">
                       Genre *
                     </label>
                     <select
                       value={formData.genre}
                       onChange={(e) => setFormData({ ...formData, genre: e.target.value })}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        background: 'rgba(0, 0, 0, 0.3)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        borderRadius: '8px',
-                        color: 'var(--text)',
-                        fontSize: '16px'
-                      }}
+                      className="form-select"
                     >
                       <option value="Action">Action</option>
                       <option value="Adventure">Adventure</option>
@@ -284,9 +262,9 @@ const SellerProducts = () => {
                 </div>
 
                 {/* Price & Stock */}
-                <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', color: 'var(--text)', marginBottom: '8px', fontWeight: '600' }}>
+                <div className="form-group-double mb-24">
+                  <div className="form-group-flex-1">
+                    <label className="form-label">
                       Price (PKR) *
                     </label>
                     <input
@@ -295,20 +273,12 @@ const SellerProducts = () => {
                       value={formData.price}
                       onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                       required
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        background: 'rgba(0, 0, 0, 0.3)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        borderRadius: '8px',
-                        color: 'var(--text)',
-                        fontSize: '16px'
-                      }}
+                      className="form-input"
                       placeholder="59.99"
                     />
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ display: 'block', color: 'var(--text)', marginBottom: '8px', fontWeight: '600' }}>
+                  <div className="form-group-flex-1">
+                    <label className="form-label">
                       Stock *
                     </label>
                     <input
@@ -316,24 +286,16 @@ const SellerProducts = () => {
                       value={formData.stock}
                       onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
                       required
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        background: 'rgba(0, 0, 0, 0.3)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        borderRadius: '8px',
-                        color: 'var(--text)',
-                        fontSize: '16px'
-                      }}
+                      className="form-input"
                       placeholder="50"
                     />
                   </div>
                 </div>
 
                 {/* Buttons */}
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <button type="submit" className="btn-primary" style={{ flex: 1 }}>
-                    Add Product
+                <div className="button-group">
+                  <button type="submit" className="btn-primary btn-flex-1">
+                    {editingId ? 'Update Product' : 'Add Product'}
                   </button>
                   <button 
                     type="button" 
@@ -343,8 +305,7 @@ const SellerProducts = () => {
                       setFormData({ title: '', console: 'PS5', genre: 'Action', price: '', stock: '', image: '' });
                       setImagePreview(null);
                     }}
-                    className="game-btn"
-                    style={{ flex: 1 }}
+                    className="game-btn btn-flex-1"
                   >
                     Cancel
                   </button>

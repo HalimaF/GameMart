@@ -1,18 +1,45 @@
 import { useState, useEffect } from "react";
 import { Container, Typography, Paper, Box } from "@mui/material";
-import users from "../data/users.json";
+import usersData from "../data/users.json";
 import './Home.css';
 import PageHeading from '../components/PageHeading';
 
+const API_URL = 'http://localhost:5000/api';
+
 const Leaderboard = () => {
   const [scrollY, setScrollY] = useState(0);
-  const sorted = [...users].sort((a, b) => b.xp - a.xp).slice(0, 10);
+  const [users, setUsers] = useState(usersData);
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const response = await fetch(`${API_URL}/users`);
+        if (response.ok) {
+          const data = await response.json();
+          setUsers(data);
+        } else {
+          const saved = localStorage.getItem('gm:users');
+          setUsers(saved ? JSON.parse(saved) : usersData);
+        }
+      } catch (error) {
+        console.error('Error loading users:', error);
+        const saved = localStorage.getItem('gm:users');
+        setUsers(saved ? JSON.parse(saved) : usersData);
+      }
+    };
+
+    loadUsers();
+    const interval = setInterval(loadUsers, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const sorted = [...users].sort((a, b) => b.xp - a.xp).slice(0, 10);
 
   return (
     <div className="home">

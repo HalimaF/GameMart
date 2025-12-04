@@ -4,6 +4,8 @@ import { useUser } from "../../context/UserContext";
 import usersData from "../../data/users.json";
 import '../Home.css';
 
+const API_URL = 'http://localhost:5000/api';
+
 const UserManagement = () => {
   const [scrollY, setScrollY] = useState(0);
   const { user } = useUser();
@@ -12,6 +14,7 @@ const UserManagement = () => {
   const [editingUser, setEditingUser] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [showPendingSellers, setShowPendingSellers] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -25,13 +28,65 @@ const UserManagement = () => {
     }
   }, [user, navigate]);
 
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const response = await fetch(`${API_URL}/users`);
+        if (response.ok) {
+          const data = await response.json();
+          setUsers(data);
+          localStorage.setItem('gm:users', JSON.stringify(data));
+        } else {
+          const saved = localStorage.getItem('gm:users');
+          setUsers(saved ? JSON.parse(saved) : usersData);
+        }
+      } catch (error) {
+        console.error('Error loading users:', error);
+        const saved = localStorage.getItem('gm:users');
+        setUsers(saved ? JSON.parse(saved) : usersData);
+      }
+    };
+
+    loadUsers();
+    const interval = setInterval(loadUsers, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const saveUsersToBackend = async (updatedUsers) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${API_URL}/users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedUsers)
+      });
+      
+      if (response.ok) {
+        localStorage.setItem('gm:users', JSON.stringify(updatedUsers));
+        setUsers(updatedUsers);
+        console.log('Users saved to backend successfully');
+      } else {
+        localStorage.setItem('gm:users', JSON.stringify(updatedUsers));
+        setUsers(updatedUsers);
+        console.warn('Backend save failed, saved to localStorage only');
+      }
+    } catch (error) {
+      console.error('Error saving users:', error);
+      localStorage.setItem('gm:users', JSON.stringify(updatedUsers));
+      setUsers(updatedUsers);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleEdit = (userData) => {
     setEditingUser(userData.id);
     setEditForm(userData);
   };
 
-  const handleSave = () => {
-    setUsers(users.map(u => u.id === editingUser ? editForm : u));
+  const handleSave = async () => {
+    const updatedUsers = users.map(u => u.id === editingUser ? editForm : u);
+    await saveUsersToBackend(updatedUsers);
     setEditingUser(null);
     setEditForm({});
   };
@@ -41,21 +96,24 @@ const UserManagement = () => {
     setEditForm({});
   };
 
-  const handleDelete = (userId) => {
+  const handleDelete = async (userId) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
-      setUsers(users.filter(u => u.id !== userId));
+      const updatedUsers = users.filter(u => u.id !== userId);
+      await saveUsersToBackend(updatedUsers);
     }
   };
 
-  const handleApprove = (userId) => {
-    setUsers(users.map(u => 
+  const handleApprove = async (userId) => {
+    const updatedUsers = users.map(u => 
       u.id === userId ? { ...u, status: 'approved' } : u
-    ));
+    );
+    await saveUsersToBackend(updatedUsers);
   };
 
-  const handleReject = (userId) => {
+  const handleReject = async (userId) => {
     if (window.confirm('Are you sure you want to reject this seller application?')) {
-      setUsers(users.filter(u => u.id !== userId));
+      const updatedUsers = users.filter(u => u.id !== userId);
+      await saveUsersToBackend(updatedUsers);
     }
   };
 

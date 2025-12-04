@@ -28,6 +28,7 @@ const EmbeddedMiniGame = ({
   allowSameOriginSandbox = false,
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   const allowed = !!src;
 
@@ -39,6 +40,7 @@ const EmbeddedMiniGame = ({
       "allow-forms",
       "allow-modals",
       "allow-downloads",
+      "allow-presentation",
     ];
     if (allowSameOriginSandbox || isSameOrigin(src)) flags.push("allow-same-origin");
     return flags.join(" ");
@@ -99,22 +101,56 @@ const EmbeddedMiniGame = ({
           overflow: "hidden",
         }}
       >
-        <Box
-          component="iframe"
-          title={title}
-          src={src}
-          allow="autoplay; fullscreen; gamepad *; xr-spatial-tracking"
-          sandbox={sandboxFlags}
-          loading="lazy"
-          sx={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            border: 0,
-            background: "#000",
-          }}
-        />
+        {loadError ? (
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            height: '100%',
+            p: 3,
+            textAlign: 'center'
+          }}>
+            <Typography sx={{ color: '#fca5a5', mb: 2, fontWeight: 600 }}>
+              Unable to load game
+            </Typography>
+            <Typography sx={{ color: '#9ca3af', mb: 2, fontSize: '0.875rem' }}>
+              This game cannot be embedded or the server is blocking access.
+            </Typography>
+            <Box
+              component="a"
+              href={src}
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{
+                color: '#60a5fa',
+                textDecoration: 'none',
+                '&:hover': { textDecoration: 'underline' }
+              }}
+            >
+              Open game in new tab instead →
+            </Box>
+          </Box>
+        ) : (
+          <Box
+            component="iframe"
+            title={title}
+            src={src}
+            allow="autoplay; fullscreen; gamepad *; xr-spatial-tracking; accelerometer; gyroscope"
+            sandbox={sandboxFlags}
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            onError={() => setLoadError(true)}
+            sx={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              border: 0,
+              background: "#000",
+            }}
+          />
+        )}
       </Box>
     </Paper>
   );
