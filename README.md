@@ -1,261 +1,92 @@
-# 🎮 GameMart - Gaming E-Commerce Platform
+# 🎮 GameMart
 
-A modern, full-featured gaming marketplace built with React and Vite, offering game sales, rentals, mini-games, rewards, and comprehensive admin/seller management.
+GameMart is a browser-first gaming marketplace and mini-games hub built with React and Vite. It includes a storefront (buy/rent), user roles (buyer, seller, admin), an embeddable mini-games collection, a rewards/XP system, chat, and lightweight analytics.
 
-## ✨ Features
+This README has been refreshed to match the current codebase and developer scripts.
 
-### 🛒 Core Shopping Experience
-- **Store**: Browse and purchase games with detailed product information
-- **Cart System**: Add items to cart with quantity management
-- **Checkout**: Secure checkout with multiple payment options (Card/COD)
-- **Game Rental**: Rent games for a limited period
-- **Game Details**: Individual game pages with comprehensive information
+## Quick Overview
+- Frontend: React + Vite + MUI
+- Backend: Lightweight Express API in `server.js` (used for simple data sync)
+- Data: Example JSON files in `src/data/` and localStorage for persistence
 
-### 🎯 User Engagement
-- **Mini Games**: Play embedded browser games
-  - Curated collection of playable mini-games
-  - Embedded gameplay experience
-  - Host-filtered for security and availability
-- **Rewards System**: Earn points and unlock achievements
-- **Leaderboard**: Competitive rankings for engaged users
-- **Group Chat**: Real-time communication between users
+## Features
+- Store: Browse, add to cart, checkout (demo flow)
+- Rentals: Rent games for limited periods
+- Mini-games: Embedded iframe games with a host allowlist and deep links
+- Rewards: XP and coins earned while playing mini-games
+- Roles: Buyer, Seller, Admin with respective dashboards and features
+- Chat: Group chat (socket.io)
 
-### 👤 User Management
-- **Multi-Role Authentication**: Buyer, Seller, and Admin roles
-- **User Profiles**: Personalized user accounts with editable information
-- **Login/Signup**: Secure authentication system
+## Getting Started (Local Development)
 
-### 🏪 Seller Dashboard
-- **Product Management**: Add, edit, and delete products with image uploads
-- **Order Management**: View and manage incoming orders
-- **Analytics**: Sales performance tracking with charts
-  - Revenue statistics
-  - Top-performing products
-  - Sales trends
+Prerequisites
+- Node.js (v16+ recommended)
+- npm
 
-### 👑 Admin Dashboard
-- **User Management**: Manage all platform users
-- **Product Management**: Full CRUD operations on all products
-- **Mini Game Management**: Add and curate mini-games
-- **Order Management**: Oversee all platform orders
-- **Reports**: Generate comprehensive business reports
-
-### 🎨 UI/UX Features
-- **Dark/Light Theme**: Toggle between themes with persistent preference
-- **Responsive Design**: Optimized for all screen sizes
-- **Gaming Aesthetic**: 
-  - Custom Orbitron/Audiowide fonts
-  - Animated gradient backgrounds
-  - Glassmorphism effects
-  - Smooth transitions and animations
-  - Doodle overlay backgrounds
-
-### 💰 Currency & Localization
-- **PKR Currency**: All prices displayed in Pakistani Rupees
-- **Formatted Pricing**: Consistent currency formatting across the platform
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js (v14 or higher)
-- npm or yarn
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/HalimaF/GameMart.git
-   cd gamemart
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Run the development server**
-   ```bash
-   npm run dev
-   ```
-
-4. **Open your browser**
-   Navigate to `http://localhost:5173`
-
-### Build for Production
-```bash
-npm run build
+Install dependencies
+```
+npm install
 ```
 
-### Preview Production Build
-```bash
-npm run preview
+Start the frontend dev server (Vite)
+```
+npm run dev
 ```
 
-## 🛠️ Tech Stack
-
-### Frontend
-- **React 18** - UI library
-- **Vite** - Build tool and dev server
-- **React Router** - Client-side routing
-- **Material-UI (MUI)** - Component library
-  - MUI Icons
-  - MUI X Charts (for analytics)
-
-### State Management
-- **React Context API** - User authentication and global state
-- **LocalStorage** - Persistent data storage for:
-  - Shopping cart
-  - Orders
-  - User preferences
-  - Seller products
-  - Admin products
-  - Favorites
-  - Theme preference
-
-### Styling
-- **CSS3** - Custom styling with CSS variables
-- **Google Fonts** - Orbitron and Audiowide for gaming aesthetic
-
-## 📁 Project Structure
-
+Start the backend API (simple Express server)
 ```
-gamemart/
-├── public/
-│   └── games/              # Game assets
-├── src/
-│   ├── assets/             # Static assets
-│   ├── components/         # Reusable components
-│   │   ├── CartItem.jsx
-│   │   ├── ChatInput.jsx
-│   │   ├── ChatMessage.jsx
-│   │   ├── EditProfileForm.jsx
-│   │   ├── EmbeddedMiniGame.jsx
-│   │   ├── FilterPanel.jsx
-│   │   ├── Footer.jsx
-│   │   ├── GameCard.jsx
-│   │   ├── GameDetails.jsx
-│   │   ├── GameImage.jsx
-│   │   ├── LeaderboardEntry.jsx
-│   │   ├── LeaderboardRank.jsx
-│   │   ├── LoadingSpinner.jsx
-│   │   ├── LoginForm.jsx
-│   │   ├── MiniGame.jsx
-│   │   ├── MiniGameControls.jsx
-│   │   ├── MiniGameScore.jsx
-│   │   ├── Modal.jsx
-│   │   ├── Navbar.jsx
-│   │   ├── PageHeading.jsx
-│   │   ├── Pagination.jsx
-│   │   ├── ProfileAvatar.jsx
-│   │   ├── QuantitySelector.jsx
-│   │   ├── RewardBadge.jsx
-│   │   ├── RewardItem.jsx
-│   │   ├── SearchBar.jsx
-│   │   ├── SignupForm.jsx
-│   │   ├── ThemeSwitcher.jsx
-│   │   └── UserProfile.jsx
-│   ├── context/            # React Context
-│   │   └── UserContext.jsx
-│   ├── data/               # JSON data files
-│   │   ├── chat.json
-│   │   ├── games.json
-│   │   ├── minigames.json
-│   │   ├── rewards.json
-│   │   └── users.json
-│   ├── pages/              # Page components
-│   │   ├── Admin/
-│   │   │   ├── AdminDashboard.jsx
-│   │   │   ├── AdminOrders.jsx
-│   │   │   ├── MiniGameManagement.jsx
-│   │   │   ├── ProductManagement.jsx
-│   │   │   ├── Reports.jsx
-│   │   │   └── UserManagement.jsx
-│   │   ├── Seller/
-│   │   │   ├── SellerAnalytics.jsx
-│   │   │   ├── SellerDashboard.jsx
-│   │   │   ├── SellerOrders.jsx
-│   │   │   └── SellerProducts.jsx
-│   │   ├── Cart.jsx
-│   │   ├── Checkout.jsx
-│   │   ├── Game.jsx
-│   │   ├── GroupChat.jsx
-│   │   ├── Home.jsx
-│   │   ├── Leaderboard.jsx
-│   │   ├── Login.jsx
-│   │   ├── MiniGame.jsx
-│   │   ├── MiniGames.jsx
-│   │   ├── Profile.jsx
-│   │   ├── Rental.jsx
-│   │   ├── Rewards.jsx
-│   │   ├── Signup.jsx
-│   │   └── Store.jsx
-│   ├── utils/              # Utility functions
-│   │   └── currency.js
-│   ├── App.jsx             # Root component
-│   ├── App.css             # Global styles
-│   ├── main.jsx            # Entry point
-│   └── index.css           # Base styles
-├── eslint.config.js
-├── vite.config.js
-├── package.json
-└── README.md
+npm run dev:server
 ```
 
-## 🔑 Key Features Explained
+Open the app in your browser: `http://localhost:5173`
 
-### Authentication & Authorization
-- **Buyer Role**: Can browse, purchase, rent games, play mini-games, and access rewards
-- **Seller Role**: Can manage their own products, view orders, and access analytics
-- **Admin Role**: Full platform control including user, product, and content management
+Note: Run the frontend and backend in separate terminals. The frontend uses Vite (port 5173 by default) and the server exposes a small API (port as defined in `server.js`, default 5000).
 
-### Shopping Flow
-1. Browse games in the Store
-2. View detailed game information
-3. Add items to Cart or Rent games
-4. Proceed to Checkout
-5. Choose payment method (Card/COD)
-6. Place order
-7. Cart clears and success message displays
+## Available npm Scripts
+- `npm run dev` — start Vite dev server
+- `npm run dev:server` — run the local Express API (`server.js`)
+- `npm run build` — build production bundle (Vite)
+- `npm run preview` — preview production build
+- `npm run lint` — run ESLint
 
-### Seller Workflow
-1. Login as seller
-2. Add products with images
-3. Manage inventory (edit/delete)
-4. View incoming orders
-5. Track sales analytics
+## Backend API (examples used by the frontend)
+- `GET /api/minigames` — list minigames
+- `GET /api/users` — list users
+- `POST /api/users` — replace users array (used by the app for simple sync)
 
-### Admin Workflow
-1. Login as admin
-2. Manage all users
-3. Manage all products (CRUD operations)
-4. Curate mini-games collection
-5. Monitor orders
-6. Generate reports
+The server is intentionally minimal and used for demo/admin sync. Most state is stored in localStorage for an offline-friendly demo experience.
 
-## 🎮 Mini Games System
-- Embedded iframe-based games
-- Host allowlist filtering for security
-- Deep linking support (play specific games via URL)
-- Categories and favorites tracking
-- Recent plays history
+## Project Structure (important files)
+- `server.js` — small Express server used for demo API endpoints
+- `src/data/` — seed JSON data used by the app (`games.json`, `minigames.json`, `users.json`, etc.)
+- `src/pages/MiniGame.jsx` — page that embeds mini-games and syncs XP/coins
+- `src/components/EmbeddedMiniGame.jsx` — iframe wrapper with sandbox and host allowlist
 
-## 💾 Data Persistence
-All data is stored in browser localStorage:
-- `gm:cart` - Shopping cart items
-- `gm:orders` - Order history
-- `gm:rental` - Current rental
-- `gm:rentals` - Rental history
-- `gm:groupchat` - Chat messages
-- `gm:favorites` - Favorite items
-- `gm:recent` - Recently viewed
-- `seller:products` - Seller's products
-- `admin:products` - Admin-managed products
-- `theme` - Theme preference (dark/light)
+## Data & LocalStorage Keys
+The app persists demo data to localStorage (keys you may see during development):
+- `gm:cart`, `gm:orders`, `gm:rental`, `gm:rentals`, `gm:groupchat`, `gm:favorites`, `gm:recent`, `gm:users`, `gm:user`, `mg:favorites`, `gm:minigames`, `theme`, `seller:products`, `admin:products`
 
-## 🎨 Theming
-The application supports both dark and light themes:
-- **Dark Theme**: Gaming-focused with dark backgrounds
-- **Light Theme**: Clean and bright alternative
-- Theme preference persists across sessions
-- Smooth transitions between themes
+## Development Notes
+- Mini-games are embedded via iframe and filtered by a host allowlist in `src/pages/MiniGame.jsx`.
+- The app periodically polls the demo backend (`/api/minigames`) and will persist admin updates to `localStorage` when available.
+- The XP/coins awarding flow is demonstrated in `MiniGame.jsx` (awards every 30s of play and POSTs updated users to `/api/users`).
+
+## Contributing
+- Fork the repo, create a branch, make changes, and open a pull request.
+
+## Committing & Pushing (Windows `cmd.exe`)
+Run these commands to commit and push the updated README:
+```
+git add README.md
+git commit -m "docs: refresh README to match current codebase"
+git push origin main
+```
+
+If you use a different default branch or want to create a feature branch, adapt the commands accordingly.
+
+## License
+This repository does not include a license file. Add one if you plan to publish or share the code.
+
+---
+If you want, I can also open a branch, run linting, or prepare a short contributing guide — tell me which next step you'd like.
 
