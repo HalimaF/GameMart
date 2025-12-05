@@ -89,5 +89,23 @@
       "js13k"
     ],
     "thumbnail": ""
+  },
+  {
+    "title": "TETRIS",
+    "src": "https://opentetris.vercel.app/",
+    "category": "Puzzle",
+    "tags": [],
+    "thumbnail": "https://th.bing.com/th/id/R.dd81daef866e592461f99f2f288f9b0f?rik=08m4a1An2EVgqQ&pid=ImgRaw&r=0",
+    "allowSameOriginSandbox": true,
+    "id": "game-1764827345106"
+  },
+  {
+    "title": "mini games",
+    "src": "https://v0games.vercel.app/",
+    "category": "Arcade",
+    "tags": [],
+    "thumbnail": "https://img.itch.zone/aW1nLzEzOTAwMDE2LnBuZw==/original/yfcpxY.png",
+    "allowSameOriginSandbox": true,
+    "id": "game-1764827527139"
   }
 ]

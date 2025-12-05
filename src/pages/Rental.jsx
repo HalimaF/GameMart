@@ -65,7 +65,6 @@ const Rental = () => {
     existingRentals.push(rental);
     localStorage.setItem('gm:rentals', JSON.stringify(existingRentals));
     
-    console.log('Rental created:', rental);
     setShowRentalModal(false);
     alert(`Successfully rented ${selectedGame.title} for ${rentalDuration} days!`);
   };

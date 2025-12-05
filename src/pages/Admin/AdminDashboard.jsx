@@ -51,9 +51,26 @@ const AdminDashboard = () => {
           setAllUsers(savedUsers ? JSON.parse(savedUsers) : usersData);
         }
 
-        // Load games (from admin products)
-        const adminProducts = localStorage.getItem('admin:products');
-        setAllGames(adminProducts ? JSON.parse(adminProducts) : gamesData);
+        // Load ALL games from unified storage (backend or localStorage)
+        try {
+          const response = await fetch(`${API_URL}/products`);
+          if (response.ok) {
+            const products = await response.json();
+            setAllGames(products);
+          } else {
+            throw new Error('Backend fetch failed');
+          }
+        } catch (error) {
+          // Fallback to localStorage unified storage
+          const unifiedProducts = localStorage.getItem('gamemart:products');
+          if (unifiedProducts) {
+            const products = JSON.parse(unifiedProducts);
+            setAllGames(products);
+          } else {
+            // Last resort: use games.json
+            setAllGames(gamesData);
+          }
+        }
 
         // Load orders
         const savedOrders = localStorage.getItem('gm:orders');

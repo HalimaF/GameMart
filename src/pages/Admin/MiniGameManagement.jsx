@@ -78,12 +78,10 @@ const MiniGameManagement = () => {
         // Also save to localStorage
         localStorage.setItem('gm:minigames', JSON.stringify(games));
         setMinigames(games);
-        console.log('Mini games saved to backend and localStorage');
       } else {
         // If backend fails, still save to localStorage
         localStorage.setItem('gm:minigames', JSON.stringify(games));
         setMinigames(games);
-        console.warn('Backend save failed, saved to localStorage only');
       }
     } catch (error) {
       console.error('Error saving minigames:', error);

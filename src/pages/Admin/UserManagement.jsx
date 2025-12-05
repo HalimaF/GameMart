@@ -64,11 +64,9 @@ const UserManagement = () => {
       if (response.ok) {
         localStorage.setItem('gm:users', JSON.stringify(updatedUsers));
         setUsers(updatedUsers);
-        console.log('Users saved to backend successfully');
       } else {
         localStorage.setItem('gm:users', JSON.stringify(updatedUsers));
         setUsers(updatedUsers);
-        console.warn('Backend save failed, saved to localStorage only');
       }
     } catch (error) {
       console.error('Error saving users:', error);
@@ -96,12 +94,12 @@ const UserManagement = () => {
     setEditForm({});
   };
 
-  const handleDelete = async (userId) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      const updatedUsers = users.filter(u => u.id !== userId);
-      await saveUsersToBackend(updatedUsers);
-    }
-  };
+  // const handleDelete = async (userId) => {
+  // window.confirm('Are you sure you want to delete this user?')) {
+  //     const datedUsers = users.filter(u => u.id !== userId);
+  // wait UsersToBackend(updatedUsers);
+  //   }
+  // };
 
   const handleApprove = async (userId) => {
     const updatedUsers = users.map(u => 

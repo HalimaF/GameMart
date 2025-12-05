@@ -57,51 +57,35 @@ const Store = () => {
         if (response.ok) {
           const data = await response.json();
           setGames(data);
-          localStorage.setItem('admin:products', JSON.stringify(data));
+          localStorage.setItem('gm:products', JSON.stringify(data));
         } else {
           // Fallback to localStorage
-          const adminProducts = localStorage.getItem('admin:products');
-          const sellerProducts = localStorage.getItem('seller:products');
+          const savedProducts = localStorage.getItem('gamemart:products');
           
-          let allGames = [];
-          
-          if (adminProducts) {
-            allGames = [...allGames, ...JSON.parse(adminProducts)];
+          if (savedProducts) {
+            const allGames = JSON.parse(savedProducts);
+            setGames(allGames);
+          } else {
+            // Use games.json as last resort
+            setGames(gamesData);
           }
-          if (sellerProducts) {
-            allGames = [...allGames, ...JSON.parse(sellerProducts)];
-          }
-          
-          if (allGames.length === 0) {
-            allGames = gamesData;
-          }
-          
-          setGames(allGames);
         }
       } catch (error) {
-        console.error('Error loading games:', error);
+        console.error('❌ Error loading games:', error);
         // Fallback to localStorage
-        const adminProducts = localStorage.getItem('admin:products');
-        const sellerProducts = localStorage.getItem('seller:products');
+        const savedProducts = localStorage.getItem('gamemart:products');
         
-        let allGames = [];
-        
-        if (adminProducts) {
-          allGames = [...allGames, ...JSON.parse(adminProducts)];
+        if (savedProducts) {
+          const allGames = JSON.parse(savedProducts);
+          setGames(allGames);
+        } else {
+          setGames(gamesData);
         }
-        if (sellerProducts) {
-          allGames = [...allGames, ...JSON.parse(sellerProducts)];
-        }
-        
-        if (allGames.length === 0) {
-          allGames = gamesData;
-        }
-        
-        setGames(allGames);
       }
     };
-    
     loadGames();
+    
+    // Refresh every 3 seconds
     const interval = setInterval(loadGames, 3000);
     return () => clearInterval(interval);
   }, []);

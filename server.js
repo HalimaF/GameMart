@@ -11,7 +11,8 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cors({ origin: true, credentials: true }));
-app.use(express.json());
+app.use(express.json({ limit: '50mb' })); // Increase payload limit for base64 images
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
@@ -43,6 +44,16 @@ const writeJSON = (filePath, data) => {
     return false;
   }
 };
+
+// Initialize files with default data if they're empty
+const initializeData = () => {
+  readJSON(GAMES_PATH);
+  readJSON(MINIGAMES_PATH);
+  readJSON(USERS_PATH);
+};
+
+// Initialize on startup
+initializeData();
 
 // ===== MINI GAMES API =====
 
@@ -155,7 +166,6 @@ let connectedUsers = 0;
 io.on('connection', (socket) => {
   connectedUsers++;
   io.emit('user:count', connectedUsers);
-  console.log(`User connected. Total users: ${connectedUsers}`);
 
   socket.on('chat:message', (msg) => {
     const enriched = { 
@@ -177,7 +187,6 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     connectedUsers--;
     io.emit('user:count', connectedUsers);
-    console.log(`User disconnected. Total users: ${connectedUsers}`);
   });
 });
 

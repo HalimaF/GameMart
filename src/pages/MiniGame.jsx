@@ -179,6 +179,7 @@ const MiniGame = () => {
                 xp: (u.xp || 0) + earnedXP,
                 coins: (u.coins || 0) + Math.floor(earnedXP / 2)
               };
+            
             }
             return u;
           });
@@ -203,7 +204,6 @@ const MiniGame = () => {
           console.error('Error updating XP:', error);
         }
       };
-      
       awardXP();
     }
   }, [playTimer, user]);

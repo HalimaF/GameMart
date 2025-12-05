@@ -48,45 +48,88 @@ const SellerProducts = () => {
     }
   };
 
-  const [myProducts, setMyProducts] = useState(() => {
-    try {
-      const saved = localStorage.getItem('seller:products');
-      return saved ? JSON.parse(saved) : games.slice(0, 8);
-    } catch { return games.slice(0, 8); }
-  });
+  const [myProducts, setMyProducts] = useState([]);
+  const [hasLoaded, setHasLoaded] = useState(false);
+
+  // Load seller's products from backend on mount
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const response = await fetch(`${API_URL}/products`);
+        if (response.ok) {
+          const allProducts = await response.json();
+          // Filter to show only this seller's products
+          const sellerProducts = allProducts.filter(p => 
+            p.sellerName === user?.username && p.sellerRole === 'seller'
+          );
+          setMyProducts(sellerProducts);
+          localStorage.setItem('seller:products', JSON.stringify(sellerProducts));
+        } else {
+          const saved = localStorage.getItem('seller:products');
+          if (saved) {
+            setMyProducts(JSON.parse(saved));
+          }
+        }
+      } catch (error) {
+        console.error('Error loading products:', error);
+        const saved = localStorage.getItem('seller:products');
+        if (saved) {
+          setMyProducts(JSON.parse(saved));
+        }
+      }
+      setHasLoaded(true);
+    };
+    loadProducts();
+  }, [user]);
 
   // Save to backend whenever products change
-  const saveProductsToBackend = async (products) => {
-    try {
-      // Get existing products from backend
-      const response = await fetch(`${API_URL}/products`);
-      let allProducts = [];
-      
-      if (response.ok) {
-        allProducts = await response.json();
-      }
-      
-      // Remove old seller products and add updated ones
-      const otherProducts = allProducts.filter(p => !myProducts.find(mp => mp.id === p.id));
-      const updatedProducts = [...otherProducts, ...products];
-      
-      // Save to backend
-      await fetch(`${API_URL}/products`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedProducts)
-      });
-    } catch (error) {
-      console.error('Error saving to backend:', error);
-    }
-  };
-
   useEffect(() => {
-    try { 
-      localStorage.setItem('seller:products', JSON.stringify(myProducts));
-      saveProductsToBackend(myProducts);
-    } catch {}
-  }, [myProducts]);
+    if (!hasLoaded || myProducts.length === 0) {
+      return;
+    }
+    
+    const saveProductsToBackend = async () => {
+      try {
+        const response = await fetch(`${API_URL}/products`);
+        let allProducts = [];
+        
+        if (response.ok) {
+          allProducts = await response.json();
+        } else {
+          allProducts = games.map(g => ({ ...g, sellerName: 'Admin', sellerRole: 'admin' }));
+        }
+        
+        const otherProducts = allProducts.filter(p => 
+          !(p.sellerName === user?.username && p.sellerRole === 'seller')
+        );
+        
+        const updatedProducts = [...otherProducts, ...myProducts];
+        
+        const saveResponse = await fetch(`${API_URL}/products`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedProducts)
+        });
+        
+        if (saveResponse.ok) {
+          localStorage.setItem('seller:products', JSON.stringify(myProducts));
+          localStorage.setItem('gamemart:products', JSON.stringify(updatedProducts));
+        } else {
+          console.error('❌ Backend save failed:', saveResponse.status);
+          if (saveResponse.status === 413) {
+            alert('Image too large! Please use a smaller image.');
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error saving to backend:', error);
+        // Save to localStorage as fallback
+        localStorage.setItem('seller:products', JSON.stringify(myProducts));
+      }
+    };
+    
+    const timeoutId = setTimeout(saveProductsToBackend, 500);
+    return () => clearTimeout(timeoutId);
+  }, [myProducts, hasLoaded, user]);
 
   const onEdit = (game) => {
     setEditingId(game.id);
@@ -103,7 +146,9 @@ const SellerProducts = () => {
   };
 
   const onDelete = (id) => {
-    setMyProducts(prev => prev.filter(p => p.id !== id));
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      setMyProducts(prev => prev.filter(p => p.id !== id));
+    }
   };
 
   const handleSubmit = (e) => {
@@ -111,7 +156,9 @@ const SellerProducts = () => {
     const productData = {
       ...formData,
       price: parseFloat(formData.price) || 0,
-      stock: parseInt(formData.stock) || 0
+      stock: parseInt(formData.stock) || 0,
+      sellerName: user?.username || 'Unknown Seller',
+      sellerRole: 'seller'
     };
     
     if (editingId) {

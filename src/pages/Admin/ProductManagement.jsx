@@ -6,6 +6,8 @@ import games from "../../data/games.json";
 import '../Home.css';
 import PageHeading from '../../components/PageHeading';
 
+const API_URL = 'http://localhost:5000/api';
+
 const ProductManagement = () => {
   const [scrollY, setScrollY] = useState(0);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -19,15 +21,96 @@ const ProductManagement = () => {
     stock: '',
     image: ''
   });
-  const [products, setProducts] = useState(() => {
-    try {
-      const saved = localStorage.getItem('admin:products');
-      return saved ? JSON.parse(saved) : games.slice(0, 12);
-    } catch { return games.slice(0, 12); }
-  });
+  const [products, setProducts] = useState([]);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  
+  // Load all products from backend ONLY on mount (no auto-refresh)
   useEffect(() => {
-    try { localStorage.setItem('admin:products', JSON.stringify(products)); } catch {}
-  }, [products]);
+    const loadProducts = async () => {
+      try {
+        const response = await fetch(`${API_URL}/products`);
+        if (response.ok) {
+          const allProducts = await response.json();
+          
+          // Check if products need seller info initialization
+          const needsInit = allProducts.length > 0 && !allProducts[0].sellerName;
+          
+          if (needsInit) {
+            const initializedProducts = allProducts.map(g => ({ 
+              ...g, 
+              sellerName: g.sellerName || 'Admin', 
+              sellerRole: g.sellerRole || 'admin' 
+            }));
+            setProducts(initializedProducts);
+            localStorage.setItem('gamemart:products', JSON.stringify(initializedProducts));
+            // Save back to backend with seller info
+            await fetch(`${API_URL}/products`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(initializedProducts)
+            });
+          } else {
+            setProducts(allProducts);
+            localStorage.setItem('gamemart:products', JSON.stringify(allProducts));
+          }
+        } else {
+          const saved = localStorage.getItem('gamemart:products');
+          if (saved) {
+            setProducts(JSON.parse(saved));
+          } else {
+            // Initialize with games.json marked as admin products
+            const initialGames = games.map(g => ({ ...g, sellerName: 'Admin', sellerRole: 'admin' }));
+            setProducts(initialGames);
+            // Save to backend
+            await fetch(`${API_URL}/products`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(initialGames)
+            });
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error loading products:', error);
+        const saved = localStorage.getItem('gamemart:products');
+        setProducts(saved ? JSON.parse(saved) : games.map(g => ({ ...g, sellerName: 'Admin', sellerRole: 'admin' })));
+      }
+      setHasLoaded(true);
+    };
+    loadProducts();
+    
+    // NO AUTO-REFRESH - only load on mount to prevent overwriting
+  }, []);
+  
+  // Save to backend whenever products change (but only after initial load)
+  useEffect(() => {
+    if (!hasLoaded || products.length === 0) {
+      return;
+    }
+    
+    const saveProducts = async () => {
+      try {
+        localStorage.setItem('gamemart:products', JSON.stringify(products));
+        const response = await fetch(`${API_URL}/products`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(products)
+        });
+        if (response.ok) {
+          await response.json();
+        } else {
+          if (response.status === 413) {
+            alert('Image too large! Please use a smaller image or URL.');
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error saving products:', error);
+      }
+    };
+    
+    // Debounce saves to prevent excessive API calls
+    const timeoutId = setTimeout(saveProducts, 500);
+    return () => clearTimeout(timeoutId);
+  }, [products, hasLoaded]);
   const { user } = useUser();
   const navigate = useNavigate();
 
@@ -70,17 +153,42 @@ const ProductManagement = () => {
   };
 
   const onDelete = (id) => {
-    setProducts(prev => prev.filter(p => p.id !== id));
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      setProducts(prev => prev.filter(p => p.id !== id));
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (editingId) {
-      setProducts(prev => prev.map(p => p.id === editingId ? { ...p, ...formData, id: editingId } : p));
-    } else {
-      const newProd = { ...formData, id: Date.now() };
-      setProducts(prev => [newProd, ...prev]);
+    
+    // Validate required fields
+    if (!formData.title || !formData.price || !formData.stock) {
+      alert('Please fill in all required fields (Title, Price, Stock)');
+      return;
     }
+    
+    const productData = {
+      ...formData,
+      price: parseFloat(formData.price) || 0,
+      stock: parseInt(formData.stock) || 0,
+      sellerName: user?.username || 'Admin',
+      sellerRole: 'admin',
+      image: formData.image || 'https://via.placeholder.com/400x300?text=No+Image'
+    };
+    
+    if (editingId) {
+      setProducts(prev => {
+        const updated = prev.map(p => p.id === editingId ? { ...p, ...productData, id: editingId } : p);
+        return updated;
+      });
+    } else {
+      const newProd = { ...productData, id: Date.now() };
+      setProducts(prev => {
+        const updated = [newProd, ...prev];
+        return updated;
+      });
+    }
+    
     setShowAddModal(false);
     setEditingId(null);
     setFormData({ title: '', console: 'PS5', genre: 'Action', price: '', stock: '', image: '' });
@@ -98,7 +206,12 @@ const ProductManagement = () => {
       <div className="featured">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
           <PageHeading title="Product" highlight="Management" center={false} />
-          <button className="btn-primary" onClick={() => { setEditingId(null); setShowAddModal(true); }}>Add New Game</button>
+          <button className="btn-primary" onClick={() => { 
+            setEditingId(null); 
+            setFormData({ title: '', console: 'PS5', genre: 'Action', price: '', stock: '', image: '' });
+            setImagePreview(null);
+            setShowAddModal(true);
+          }}>Add New Game</button>
         </div>
 
         <div style={{
@@ -118,6 +231,7 @@ const ProductManagement = () => {
                 <th style={{ padding: '16px', textAlign: 'left', color: 'var(--text-dim)', fontWeight: '600' }}>Genre</th>
                 <th style={{ padding: '16px', textAlign: 'left', color: 'var(--text-dim)', fontWeight: '600' }}>Price</th>
                 <th style={{ padding: '16px', textAlign: 'left', color: 'var(--text-dim)', fontWeight: '600' }}>Stock</th>
+                <th style={{ padding: '16px', textAlign: 'left', color: 'var(--text-dim)', fontWeight: '600' }}>Seller</th>
                 <th style={{ padding: '16px', textAlign: 'left', color: 'var(--text-dim)', fontWeight: '600' }}>Actions</th>
               </tr>
             </thead>
@@ -141,6 +255,25 @@ const ProductManagement = () => {
                   <td style={{ padding: '16px', color: 'var(--text-dim)' }}>{g.genre}</td>
                   <td style={{ padding: '16px', color: 'var(--primary)', fontWeight: '700', fontSize: '18px' }}>{formatPKR(g.price)}</td>
                   <td style={{ padding: '16px', color: g.stock > 10 ? '#86efac' : '#fca5a5', fontWeight: '600' }}>{g.stock}</td>
+                  <td style={{ padding: '16px' }}>
+                    <div>
+                      <span style={{ 
+                        color: g.sellerRole === 'admin' ? '#00ffe7' : '#86efac',
+                        fontWeight: '600',
+                        fontSize: '13px'
+                      }}>
+                        {g.sellerName || 'Admin'}
+                      </span>
+                      <div style={{ 
+                        fontSize: '11px', 
+                        color: 'var(--text-dim)', 
+                        marginTop: '2px',
+                        textTransform: 'capitalize'
+                      }}>
+                        {g.sellerRole || 'admin'}
+                      </div>
+                    </div>
+                  </td>
                   <td style={{ padding: '16px' }}>
                     <button className="game-btn" onClick={() => onEdit(g)} style={{ padding: '6px 12px', fontSize: '12px', marginRight: '8px' }}>
                       Edit
@@ -208,7 +341,6 @@ const ProductManagement = () => {
                       onChange={handleImageChange}
                       style={{ display: 'none' }}
                       id="product-image"
-                      required
                     />
                     <label htmlFor="product-image" style={{ cursor: 'pointer' }}>
                       {imagePreview ? (
@@ -356,7 +488,11 @@ const ProductManagement = () => {
 
                 {/* Buttons */}
                 <div style={{ display: 'flex', gap: '12px' }}>
-                  <button type="submit" className="btn-primary" style={{ flex: 1 }}>
+                  <button 
+                    type="submit" 
+                    className="btn-primary" 
+                    style={{ flex: 1 }}
+                  >
                     {editingId ? 'Save Changes' : 'Add Product'}
                   </button>
                   <button 

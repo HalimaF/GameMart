@@ -30,9 +30,14 @@ const SellerDashboard = () => {
   useEffect(() => {
     const loadData = () => {
       try {
-        // Load seller products
+        // Load only THIS seller's products
         const savedProducts = localStorage.getItem('seller:products');
-        setMyProducts(savedProducts ? JSON.parse(savedProducts) : gamesData.slice(0, 8));
+        if (savedProducts) {
+          const products = JSON.parse(savedProducts);
+          setMyProducts(products);
+        } else {
+          setMyProducts([]);
+        }
 
         // Load orders
         const savedOrders = localStorage.getItem('gm:orders');
@@ -43,7 +48,7 @@ const SellerDashboard = () => {
         setRentals(savedRentals ? JSON.parse(savedRentals) : []);
       } catch (error) {
         console.error('Error loading data:', error);
-        setMyProducts(gamesData.slice(0, 8));
+        setMyProducts([]);
         setOrders([]);
         setRentals([]);
       }

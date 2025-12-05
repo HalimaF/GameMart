@@ -40,8 +40,8 @@
     "email": "gamer@example.com",
     "password": "password123",
     "role": "buyer",
-    "coins": 2450,
-    "xp": 5680,
+    "coins": 2455,
+    "xp": 5690,
     "tier": "Gold",
     "badges": [
       "First Purchase",
@@ -129,5 +129,35 @@
     "badges": [],
     "joinDate": "2025-12-04T05:04:56.455Z",
     "status": "approved"
+  },
+  {
+    "id": 1764826181552,
+    "username": "Bisma",
+    "email": "bisma@gmail.com",
+    "password": "bisma",
+    "role": "buyer",
+    "tier": "Bronze",
+    "coins": 0,
+    "xp": 0,
+    "badges": [],
+    "joinDate": "2025-12-04T05:29:41.552Z",
+    "status": "approved"
+  },
+  {
+    "id": 1764827118376,
+    "username": "halima",
+    "email": "123@gmail.com",
+    "password": "1234r",
+    "role": "seller",
+    "tier": "Bronze",
+    "coins": 0,
+    "xp": 0,
+    "badges": [],
+    "joinDate": "2025-12-04T05:45:18.376Z",
+    "status": "approved",
+    "businessName": "gamerx",
+    "businessAddress": "123hres",
+    "phoneNumber": "03067847334",
+    "cnic": "2345676615267"
   }
 ]
